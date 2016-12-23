@@ -2,18 +2,23 @@
 //speed 2, ani speed 1700, create speed 1400
 //speed 1, ani speed 1400, create speed 1100
 
-var is_device = document.URL.indexOf( 'http://' ) === -1 && document.URL.indexOf( 'https://' ) === -1;
+is_device = false;
 
-if(is_device)
-    document.addEventListener('deviceReady', onDeviceReady);
-else
-    $(document).ready(init);
+document.addEventListener('deviceReady', onDeviceReady);
+
+setTimeout(function() {
+    if (!is_device) {
+        alert('agh');
+        init();
+    }
+}, 1500);
 
 var fly_sound;
 var crash_sound;
 var admobid = {};
 
 function onDeviceReady(){
+    is_device = true;
     fly_sound = new Media('sounds/fly.mp3');
     crash_sound = new Media('sounds/crash.mp3');
     fly_sound.setVolume(1);
@@ -414,10 +419,10 @@ function init(){
             // TODO: play a success kind of sound
         }
         else {
-            $end_best_score.html('<span>BEST SCORE</span>'+best_score); 
+            $end_best_score.html('<span>BEST SCORE</span>'+best_score);
         }
 
-        
+
         $best_score.html('<span>BEST SCORE</span>'+best_score);
 
         //remove trail
