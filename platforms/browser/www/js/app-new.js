@@ -2,23 +2,18 @@
 //speed 2, ani speed 1700, create speed 1400
 //speed 1, ani speed 1400, create speed 1100
 
-is_device = false;
+var is_device = document.URL.indexOf( 'http://' ) === -1 && document.URL.indexOf( 'https://' ) === -1;
 
-document.addEventListener('deviceReady', onDeviceReady);
-
-setTimeout(function() {
-    if (!is_device) {
-        alert('agh');
-        init();
-    }
-}, 1500);
+if(is_device)
+    document.addEventListener('deviceReady', onDeviceReady);
+else
+    $(document).ready(init);
 
 var fly_sound;
 var crash_sound;
 var admobid = {};
 
 function onDeviceReady(){
-    is_device = true;
     fly_sound = new Media('sounds/fly.mp3');
     crash_sound = new Media('sounds/crash.mp3');
     fly_sound.setVolume(1);
@@ -109,12 +104,6 @@ function init(){
     var create_obstacle_speed = ani_speed - 400;
 
     var best_score = window.localStorage.getItem('helicopter_best_score');
-
-    //for testing
-    /*var is_device = 'ontouchend' in document;
-    var start_event = is_device ? 'touchstart' : 'mousedown';
-    var end_event = is_device ? 'touchend' : 'mouseup';
-    */
 
     //change for app deployment
     var start_event = 'ontouchend' in document ? 'touchstart' : 'mousedown';
