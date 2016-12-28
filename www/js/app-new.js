@@ -350,8 +350,8 @@ function init(){
 
         if(is_device){
             //vibrate
-            var platform = device.platform;
-            if(platform.match(/ios/i))
+            //var platform = device.platform;
+            //if(platform.match(/ios/i))
                 //navigator.notification.vibrate(300);
 
             //stop flying sound
@@ -421,7 +421,6 @@ function init(){
         else {
             $end_best_score.html('<span>BEST SCORE</span>'+best_score);
         }
-
 
         $best_score.html('<span>BEST SCORE</span>'+best_score);
 
