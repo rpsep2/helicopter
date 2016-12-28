@@ -43,6 +43,7 @@
     <plugin spec="https://github.com/apache/cordova-plugin-splashscreen" source="git" />
     <plugin spec="https://github.com/apache/cordova-plugin-whitelist" source="git" />
     <plugin spec="https://github.com/EddyVerbruggen/cordova-plugin-ios-longpress-fix" source="git" />
+    <plugin spec="https://github.com/leecrossley/cordova-plugin-game-center" source="git" />
 
     <!--<plugin name="org.apache.cordova.dialogs" />
     <plugin name="org.apache.cordova.media" spec="0.2.8" source="pgb" />

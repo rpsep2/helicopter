@@ -314,34 +314,8 @@
 	}
 }
 
-#share{
-	position: absolute;
-	top:230px;
-	left:50%;
-	width:110px;
-	height:35px;
-	font:20px/35px Helvetica, Arial, Sans-serif;
-	color:#fff;
-	text-align: center;
-	background-color:#a96601;
-	margin:0 0 0 -55px;
-	letter-spacing: -1px;
-	border-radius: 3px;
-    border-bottom: 2px solid #a96601;
-}
-
-#share span{
-	float: left;
-    width: 106px;
-    margin: 2px;
-    height: 31px;
-    background: #ff9900;
-    line-height: 31px;
-}
-
 #gameover-buttons-wrapper{
 	width: 200px;
-	height: 35px;
 	display: block;
 	position: absolute;
 	bottom: 150px;
@@ -380,6 +354,30 @@
 	color:#fff;
 	text-align: center;
 	background-color:#25970a;
+	letter-spacing: -1px;
+}
+
+#leaderboard{
+	float: left;
+	width: 90px;
+	height: 35px;
+	font: 20px/35px Helvetica, Arial, Sans-serif;
+	color: #fff;
+	text-align: center;
+	background-color: #a96601;
+	margin: 0 20px 70px 0;
+	letter-spacing: -1px;
+}
+
+#share{
+	float:left;
+	width:90px;
+	height:35px;
+	font:20px/35px Helvetica, Arial, Sans-serif;
+	color:#fff;
+	text-align: center;
+	background-color:#a96601;
+	margin-bottom:70px;
 	letter-spacing: -1px;
 }
 
@@ -487,7 +485,6 @@
 
 #intro-buttons-wrapper{
 	width: 200px;
-	height: 35px;
 	display: block;
 	position: absolute;
 	bottom: 150px;
@@ -534,9 +531,16 @@
 #start,
 #ok,
 .rate,
-.remove-ads{
+.remove-ads,
+#leaderboard,
+#share{
 	border-radius:3px;
 	border-bottom:2px solid #25970a;
+}
+
+#leaderboard,
+#share{
+	border-bottom-color: #a96601;
 }
 
 .remove-ads{
@@ -547,13 +551,27 @@
 .rate span,
 #ok span,
 #start span,
-.remove-ads span{
+.remove-ads span,
+#leaderboard span,
+#share span{
 	float:left;
 	width:86px;
 	margin:2px;
 	height:31px;
 	background: #37c117;
 	line-height: 31px;
+}
+
+#leaderboard span,
+#share span{
+	background-color:#ff9900;
+}
+
+#leaderboard span{
+	background-image:url(../images/leaderboard-icon.png);
+	background-repeat:no-repeat;
+	background-position: center;
+	background-size: auto 26px;
 }
 
 .remove-ads span{
@@ -564,6 +582,7 @@
 #ok.hover,
 .rate.hover,
 .remove-ads.hover,
+#leaderboard.hover,
 #share.hover{
 	border:none;
 	margin-top:2px;

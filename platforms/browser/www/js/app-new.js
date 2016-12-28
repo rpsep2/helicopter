@@ -97,6 +97,7 @@ function init(){
     var max_bottom = window_height /2; //dont want a gap bigger than half the screen, too easy
     var max_top = window_height /2; //dont want a gap bigger than half the screen, too easy
     var total_gap = window_height - floor_height - roof_height;
+    var gamecenter_auth = check_gamecenter_auth();
 
     /* --  SETTINGS -- */
     var speed = 1.2; // set the speed depending on difficulty selected, lower = harder
@@ -119,6 +120,12 @@ function init(){
         check_collisions = setInterval(check_collision, 50);
         increase_speed = setInterval(increment_speed, 1000);
     });
+
+    function check_gamecenter_auth() {
+        return window.localStorage.getItem('helicopter_gamecenter_auth')
+            ? window.localStorage.getItem('helicopter_gamecenter_auth')
+            : false;
+    }
 
     function set_ani_speed(){
         return 1100 + (speed * 300);
@@ -343,7 +350,9 @@ function init(){
 
         if(is_device){
             //vibrate
-            //navigator.notification.vibrate(300); BUGGY??!!
+            var platform = device.platform;
+            if(platform.match(/ios/i))
+                //navigator.notification.vibrate(300);
 
             //stop flying sound
             setTimeout(function(){
@@ -398,9 +407,11 @@ function init(){
         //check best score + update if new best + show user
         best_score = window.localStorage.getItem('helicopter_best_score');
         var game_score = cur_score;
-        $game_score.html('<span>YOUR SCORE</span>'+game_score);
+        $game_score.html('<span>GAME SCORE</span>'+game_score);
+        var new_best = false;
 
         if(!best_score || (game_score > best_score)){
+            new_best = true;
             best_score = game_score
             window.localStorage.setItem('helicopter_best_score', best_score);
             $end_best_score.html('<span>BEST SCORE</span>' + game_score + '<span class="new">NEW!</span>').addClass('new-best');
@@ -434,6 +445,10 @@ function init(){
             },10);
 
             create_fire = setInterval(fire, 50);
+
+            // submit score to leaderboard if new best
+            if (new_best)
+                submit_highscore();
 
         },600);
     }
@@ -495,13 +510,14 @@ function init(){
     }
 
     //setup hovers
-    $('#start, #ok, .rate, .remove-ads, #share').on(start_event, function(){
+    $('#start, #ok, .rate, .remove-ads, #leaderboard, #share').on(start_event, function(){
         $(this).addClass('hover');
     }).on(end_event, function(){
         $(this).removeClass('hover');
     });
 
     // Setup Rate button
+    // TODO!! update iOS url
     $('.rate').on(end_event, function(){
         if (is_device)
             var platform = device.platform;
@@ -514,7 +530,8 @@ function init(){
             window.open('market://details?id=co.uk.rp_digital.helicopter_free');
     });
 
-    // Setup Rate button
+    // Setup remove ads button - purchase, and store the fact user has purchased
+    // TODO!
     $('.remove-ads').on(end_event, function(){
         if (is_device)
             var platform = device.platform;
@@ -526,6 +543,108 @@ function init(){
         else
             window.open('market://details?id=co.uk.rp_digital.helicopter_paid');
     });
+
+    // TODO???
+    $('#share').on(end_event, function() {
+    });
+
+
+    $('#leaderboard').on(end_event, show_leaderboard);
+
+    function show_leaderboard() {
+        if (is_device) {
+            if (!gamecenter_auth) {
+                ask_for_gamecenter_show_auth();
+            }
+            else {
+                var platform = device.platform;
+                if (platform.match(/ios/i)) {
+                    var data = {
+                        leaderboardId: "helicopter.highscores"
+                    };
+                    gamecenter.showLeaderboard(gamecenter_show_success, gamecenter_show_fail, data);
+                }
+                else {
+                    // TODO android
+                }
+            }
+        }
+    }
+
+    function submit_highscore() {
+        if (is_device) {
+            // make sure we are authed first
+            if (!gamecenter_auth) {
+                ask_for_gamecenter_submit_auth();
+            }
+            else {
+                var platform = device.platform;
+                if (platform.match(/ios/i)) {
+                    var data = {
+                        score: best_score,
+                        leaderboardId: "helicopter.highscores"
+                    };
+                    gamecenter.submitScore(gamecenter_submit_success, gamecenter_submit_fail, data);
+                }
+                else {
+                    // TODO: android
+                }
+            }
+        }
+    }
+
+    function ask_for_gamecenter_submit_auth() {
+        // different for ios vs android
+        var platform = device.platform;
+
+        if (platform.match(/ios/i))
+            gamecenter.auth(gamecenter_submit_auth_success, gamecenter_submit_auth_fail);
+        else {
+            // TODO: android
+        }
+    }
+
+    function ask_for_gamecenter_show_auth() {
+        // different for ios vs android
+        var platform = device.platform;
+
+        if (platform.match(/ios/i)) {
+            gamecenter.auth(gamecenter_show_auth_success, gamecenter_show_auth_fail);
+        }
+        else {
+            // TODO: android
+        }
+    }
+
+    function gamecenter_submit_auth_success(user) {
+        // all good, attempt to submit highscore again
+        submit_highscore();
+    }
+
+    function gamecenter_submit_auth_fail() {
+    }
+
+    function gamecenter_show_auth_success(user) {
+        // all good, attempt to show leaderboard
+        show_leaderboard();
+    }
+
+    function gamecenter_show_auth_fail(data) {
+    }
+
+    function gamecenter_submit_success() {
+    }
+
+    function gamecenter_submit_fail() {
+    }
+
+    function gamecenter_show_success() {
+    }
+
+    function gamecenter_show_fail(data) {
+    }
+
+
 
 
 
