@@ -9,6 +9,7 @@ if(is_device)
 else
     $(document).ready(init);
 
+var no_ads = window.localStorage.getItem('helicopter_no_ads') ? window.localStorage.getItem('helicopter_no_ads') : false;
 var fly_sound;
 var crash_sound;
 var admobid = {};
@@ -52,6 +53,7 @@ function onDeviceReady(){
     init();
 
     setTimeout(function() {
+        StatusBar.hide();
         navigator.splashscreen.hide();
     }, 4000);
 }
@@ -100,7 +102,6 @@ function init(){
     var gamecenter_auth = false;
     var $lives = $('#lives-count');
     var num_lives = window.localStorage.getItem('helicopter_lives') ? window.localStorage.getItem('helicopter_lives') : 10;
-    var no_ads = window.localStorage.getItem('helicopter_no_ads') ? window.localStorage.getItem('helicopter_no_ads') : false;
     var $purchase = $('#purchase');
     var $no_lives = $('#no-lives');
     var $life_timer_wrap = $('#life-timer-wrap');
@@ -195,7 +196,11 @@ function init(){
 
         // moving blocks at 10+ but randomly. except at exactly 10 we want a moving block.
         // at 20+ we want ALL blocks to be moving
-        if (cur_score >= 20) {
+        if (cur_score >= 30) {
+            moving_block = 1;
+            block_height = block_height / 1.5;
+        }
+        else if (cur_score >= 20) {
             moving_block = 1;
             block_height = block_height / 2;
         }
@@ -304,7 +309,7 @@ function init(){
 
         var hit = false;
 
-        if(copter_top <= 0){
+        if(copter_top <= 20){
             hit = true;
             show_gameover();
             //stop this continuing
@@ -645,7 +650,7 @@ function init(){
             type:   store.CONSUMABLE
         });
 
-        // A consumable 25 lives product
+        /*// A consumable 25 lives product
         store.register({
             id:    'co.uk.jobooz.helicopter.lives25',
             alias: '25 lives',
@@ -657,7 +662,7 @@ function init(){
             id:    'co.uk.jobooz.helicopter.lives50',
             alias: '50 lives',
             type:   store.CONSUMABLE
-        });
+        });*/
 
         // A non-consumable (one-off) 'Full version / no ads' product
         store.register({
@@ -684,17 +689,25 @@ function init(){
                     owned: p.owned
                 };
 
-                // store so we can have easy access later if needs be
+                // store so we can have easy access later if needs be?
                 window.localStorage.setItem('helicopter_' + nice_id, JSON.stringify(data));
 
-                // update the display details, price etc on the purchase 'screen'
+                // update the display details, price etc on the purchase screen
                 update_store_item(data);
             }
         });
 
         // When the purchase of lives is approved, update lives count
         store.when("10 lives").approved(function (order) {
-            alert(JSON.stringify(order));
+            num_lives += 10;
+            update_lives();
+            hide_purchase();
+            order.finish();
+        });
+
+        // When the purchase of no adverts, update
+        store.when("no ads").approved(function (order) {
+            remove_ads();
             order.finish();
         });
 
@@ -707,7 +720,7 @@ function init(){
         // -----------------
 
         store.error(function(error) {
-          alert('ERROR ' + error.code + ': ' + error.message);
+            navigator.notification.alert('ERROR ' + error.code + ': ' + error.message);
         });
 
         // As the last step, refresh the store:
@@ -725,7 +738,7 @@ function init(){
         var $el = $('#' + nice_id);
 
         // update price
-        $el.find('.price').html(data.price);
+        $el.find('.price').html('<span>' + data.price + '</span>');
 
         // update title
         $el.find('.title').html(data.title);
@@ -733,16 +746,8 @@ function init(){
         // update productId data
         $el.data('productId', data.id);
 
-        // is it owned? (remove_ads only really)
-        if (data.owned) {
-            $el.addClass('owned');
-        }
-        else {
-            $el.removeClass('owned');
-        }
-
         // update UI - remove ads or update lives count
-        if (nice_id == 'lives') {
+        /*if (nice_id == 'lives') {
             // update localstorage & var
             num_lives += 10;
             update_lives();
@@ -754,21 +759,28 @@ function init(){
         else if (nice_id == 'lives50') {
             num_lives += 50;
             update_lives();
-        }
-        else if (nice_id == 'remove_ads') {
+        }*/
+
+        // remove ads is non consumable, so if its owned, make sure we remove ads
+        // localstorage could get deleted
+        if (nice_id == 'remove_ads' && data.owned) {
             remove_ads();
+        }
+        else {
+            $el.removeClass('owned');
         }
     }
 
     function update_lives() {
         window.localStorage.setItem('helicopter_lives', num_lives);
-        console.log(num_lives)
         $lives.html(num_lives);
     }
 
     function remove_ads() {
         no_ads = true;
         window.localStorage.setItem('helicopter_no_ads', true);
+        // hide the remove ads purchase option
+        $('#remove_ads').hide();
         AdMob.hideBanner();
     }
 
@@ -796,6 +808,11 @@ function init(){
             $purchase.hide();
         },300);
     }
+
+    $('.purchase-product').on('end_event', function() {
+        var productId = $(this).closest('.product').data('productId');
+        store.order(productId);
+    });
 
 
 
