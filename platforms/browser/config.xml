@@ -22,6 +22,8 @@
     <preference name="DisallowOverscroll" value="true" />
     <preference name="webviewbounce" value="false" />
     <preference name="permissions" value="none" />
+    <preference name="SuppressesLongPressGesture" value="true" />
+    <preference name="Suppress3DTouch" value="true" />
     <allow-navigation href="*" />
     <allow-intent href="*" />
     <icon src="icon.png" />

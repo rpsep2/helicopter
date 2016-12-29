@@ -37,7 +37,7 @@ function onDeviceReady(){
     }
 
     //Ads
-    if(typeof AdMob != 'undefined'){
+    if(typeof AdMob != 'undefined' && !no_ads){
         AdMob.createBanner({
             adId : admobid.banner,
             position : AdMob.AD_POSITION.BOTTOM_CENTER,
@@ -97,7 +97,14 @@ function init(){
     var max_bottom = window_height /2; //dont want a gap bigger than half the screen, too easy
     var max_top = window_height /2; //dont want a gap bigger than half the screen, too easy
     var total_gap = window_height - floor_height - roof_height;
-    var gamecenter_auth = check_gamecenter_auth();
+    var gamecenter_auth = false;
+    var $lives = $('#lives-count');
+    var num_lives = window.localStorage.getItem('helicopter_lives') ? window.localStorage.getItem('helicopter_lives') : 10;
+    var no_ads = window.localStorage.getItem('helicopter_no_ads') ? window.localStorage.getItem('helicopter_no_ads') : false;
+    var $purchase = $('#purchase');
+    var $no_lives = $('#no-lives');
+    var $life_timer_wrap = $('#life-timer-wrap');
+    var $life_timer = $('#life-timer');
 
     /* --  SETTINGS -- */
     var speed = 1.2; // set the speed depending on difficulty selected, lower = harder
@@ -113,6 +120,14 @@ function init(){
     // Show the start screen
     show_start();
 
+    // auth gamecenter
+    if (is_device)
+        do_gamecenter_auth();
+
+    // setup purchases
+    if (is_device)
+        setup_purchases();
+
     $instructions.on(start_event, function(){
         $body.on(start_event, copter_touchstart).on(end_event, copter_touchend);
         $instructions.hide();
@@ -120,12 +135,6 @@ function init(){
         check_collisions = setInterval(check_collision, 50);
         increase_speed = setInterval(increment_speed, 1000);
     });
-
-    function check_gamecenter_auth() {
-        return window.localStorage.getItem('helicopter_gamecenter_auth')
-            ? window.localStorage.getItem('helicopter_gamecenter_auth')
-            : false;
-    }
 
     function set_ani_speed(){
         return 1100 + (speed * 300);
@@ -350,8 +359,8 @@ function init(){
 
         if(is_device){
             //vibrate
-            var platform = device.platform;
-            if(platform.match(/ios/i))
+            //var platform = device.platform;
+            //if(platform.match(/ios/i))
                 //navigator.notification.vibrate(300);
 
             //stop flying sound
@@ -390,10 +399,11 @@ function init(){
         $('.obstacle').each(function(i, ob) {
             var current_obstacle_matrix = $(ob).css('transform').replace(/[^0-9\-.,]/g, '').split(',');
             var current_obstacle_left = current_obstacle_matrix[4];
+            var current_obstacle_top = current_obstacle_matrix[5];
 
             $(ob).css({
                 '-webkit-transition': 'none',
-                '-webkit-transform': 'translate3d(' + current_obstacle_left + 'px,0,0)'
+                '-webkit-transform': 'translate3d(' + current_obstacle_left + 'px,'+ current_obstacle_top +'px,0)'
             });
         });
 
@@ -422,11 +432,15 @@ function init(){
             $end_best_score.html('<span>BEST SCORE</span>'+best_score);
         }
 
-
         $best_score.html('<span>BEST SCORE</span>'+best_score);
 
         //remove trail
         $('.trail').remove();
+
+        // update lives
+        num_lives -= 1;
+        window.localStorage.setItem('helicopter_lives', num_lives);
+        update_lives();
 
         setTimeout(function(){
             // remove any obstacles
@@ -446,8 +460,8 @@ function init(){
 
             create_fire = setInterval(fire, 50);
 
-            // submit score to leaderboard if new best
-            if (new_best)
+            // submit score to leaderboard if new best, and alrady authed
+            if (gamecenter_auth)
                 submit_highscore();
 
         },600);
@@ -458,7 +472,7 @@ function init(){
     function show_start(){
         // show the interstitial later, e.g. at end of game level
         var rand_num = randomNumberFromRange(1, 3);
-        if(rand_num == 2 && is_device && typeof AdMob != 'undefined'){
+        if(rand_num == 2 && is_device && typeof AdMob != 'undefined' && !no_ads){
             AdMob.showInterstitial();
             // prepare a new interstitual
             AdMob.prepareInterstitial( {adId:admobid.interstitial, autoShow:false} );
@@ -494,19 +508,27 @@ function init(){
 
             grass_scroll();
             scroll_grass = setInterval(grass_scroll, ani_speed);
+
+            update_lives();
         }, timeout);
     }
 
     $('#start').on(end_event, show_instructions);
 
     function show_instructions(){
-        $intro.hide();
-        $instructions.show();
-        $helicopter.show();
-        $score.text('0').show();
-        start_pos = $helicopter.offset().top;
+        if (num_lives > 0) {
+            $intro.hide();
+            $instructions.show();
+            $helicopter.show();
+            $score.text('0').show();
+            start_pos = $helicopter.offset().top;
 
-        create_trails = setInterval(create_trail, 50);
+            create_trails = setInterval(create_trail, 50);
+        }
+        else {
+            // no lives left
+            show_purchase();
+        }
     }
 
     //setup hovers
@@ -531,32 +553,17 @@ function init(){
     });
 
     // Setup remove ads button - purchase, and store the fact user has purchased
-    // TODO!
-    $('.remove-ads').on(end_event, function(){
-        if (is_device)
-            var platform = device.platform;
-        else
-            var platform = 'android';
-
-        if(platform.match(/ios/i))
-            window.open('itms-apps://itunes.apple.com/us/app/domainsicle-domain-name-search/id511364723?ls=1&mt=8'); // or itms://
-        else
-            window.open('market://details?id=co.uk.rp_digital.helicopter_paid');
-    });
+    $('.remove-ads').on(end_event, show_purchase);
 
     // TODO???
     $('#share').on(end_event, function() {
     });
 
-
     $('#leaderboard').on(end_event, show_leaderboard);
 
     function show_leaderboard() {
         if (is_device) {
-            if (!gamecenter_auth) {
-                ask_for_gamecenter_show_auth();
-            }
-            else {
+            if (gamecenter_auth) {
                 var platform = device.platform;
                 if (platform.match(/ios/i)) {
                     var data = {
@@ -568,68 +575,45 @@ function init(){
                     // TODO android
                 }
             }
+            else {
+                navigator.notification.alert('There was an error loading the Game Center Highscores. Please check your settings and try again.', function() {}, 'Game Center Error');
+            }
         }
     }
 
     function submit_highscore() {
         if (is_device) {
-            // make sure we are authed first
-            if (!gamecenter_auth) {
-                ask_for_gamecenter_submit_auth();
+            var platform = device.platform;
+            if (platform.match(/ios/i)) {
+                var data = {
+                    score: best_score,
+                    leaderboardId: "helicopter.highscores"
+                };
+                gamecenter.submitScore(gamecenter_submit_success, gamecenter_submit_fail, data);
             }
             else {
-                var platform = device.platform;
-                if (platform.match(/ios/i)) {
-                    var data = {
-                        score: best_score,
-                        leaderboardId: "helicopter.highscores"
-                    };
-                    gamecenter.submitScore(gamecenter_submit_success, gamecenter_submit_fail, data);
-                }
-                else {
-                    // TODO: android
-                }
+                // TODO: android
             }
         }
     }
 
-    function ask_for_gamecenter_submit_auth() {
+    function do_gamecenter_auth() {
         // different for ios vs android
         var platform = device.platform;
 
         if (platform.match(/ios/i))
-            gamecenter.auth(gamecenter_submit_auth_success, gamecenter_submit_auth_fail);
+            gamecenter.auth(gamecenter_auth_success, gamecenter_auth_fail);
         else {
             // TODO: android
         }
     }
 
-    function ask_for_gamecenter_show_auth() {
-        // different for ios vs android
-        var platform = device.platform;
-
-        if (platform.match(/ios/i)) {
-            gamecenter.auth(gamecenter_show_auth_success, gamecenter_show_auth_fail);
-        }
-        else {
-            // TODO: android
-        }
+    function gamecenter_auth_success() {
+        gamecenter_auth = true;
     }
 
-    function gamecenter_submit_auth_success(user) {
-        // all good, attempt to submit highscore again
-        submit_highscore();
-    }
-
-    function gamecenter_submit_auth_fail() {
-    }
-
-    function gamecenter_show_auth_success(user) {
-        // all good, attempt to show leaderboard
-        show_leaderboard();
-    }
-
-    function gamecenter_show_auth_fail(data) {
+    function gamecenter_auth_fail() {
+        gamecenter_auth = false;
     }
 
     function gamecenter_submit_success() {
@@ -642,9 +626,169 @@ function init(){
     }
 
     function gamecenter_show_fail(data) {
+        navigator.notification.alert('There was an error loading the Game Center Highscores. Please check your settings and try again.', function() {}, 'Game Center Error');
     }
 
+    /* in app purchases */
 
+    // use localstorage to update local var (quicker than using the store)
+    // store will update again once its finished refreshing etc.
+    // this just means we can show correct data instantly
+
+    function setup_purchases() {
+        // First inform the store about our three configured products:
+
+        // A consumable 10 lives product
+        store.register({
+            id:    'co.uk.jobooz.helicopter.lives',
+            alias: '10 lives',
+            type:   store.CONSUMABLE
+        });
+
+        // A consumable 25 lives product
+        store.register({
+            id:    'co.uk.jobooz.helicopter.lives25',
+            alias: '25 lives',
+            type:   store.CONSUMABLE
+        });
+
+        // A consumable 50 lives product
+        store.register({
+            id:    'co.uk.jobooz.helicopter.lives50',
+            alias: '50 lives',
+            type:   store.CONSUMABLE
+        });
+
+        // A non-consumable (one-off) 'Full version / no ads' product
+        store.register({
+            id:    'co.uk.jobooz.helicopter.remove_ads',
+            alias: 'no ads',
+            type:   store.NON_CONSUMABLE
+        });
+
+        // Now configure event listeners:
+        // ------------------------------
+
+        // When any product gets updated (or refreshed), its details are passed to app
+        store.when("product").updated(function (p) {
+            // This is a good place to prepare or render the UI based on these refreshed details:
+            var productId = p.id;
+            var nice_id = productId.split('.').pop();
+            if (p.valid) {
+                var data = {
+                    id: productId, // call store.order(id) to buy this product
+                    title: p.title,
+                    description: p.description,
+                    canPurchase: p.canPurchase,
+                    price: p.price, // in the currency of the users App Store account
+                    owned: p.owned
+                };
+
+                // store so we can have easy access later if needs be
+                window.localStorage.setItem('helicopter_' + nice_id, JSON.stringify(data));
+
+                // update the display details, price etc on the purchase 'screen'
+                update_store_item(data);
+            }
+        });
+
+        // When the purchase of lives is approved, update lives count
+        store.when("10 lives").approved(function (order) {
+            alert(JSON.stringify(order));
+            order.finish();
+        });
+
+        // When the store is ready all products are loaded and in their "final" state.
+        store.ready(function() {
+            console.log("The store is ready");
+        });
+
+        // Deal with errors:
+        // -----------------
+
+        store.error(function(error) {
+          alert('ERROR ' + error.code + ': ' + error.message);
+        });
+
+        // As the last step, refresh the store:
+        // -------------------------------------
+
+        // This will contact the server to check all registered products validity and ownership status.
+        // It's mostly fine to do this only at application startup but you can refresh it more often.
+        store.refresh();
+    }
+
+    function update_store_item(data) {
+        // get the el
+        var productId = data.id;
+        var nice_id = productId.split('.').pop();
+        var $el = $('#' + nice_id);
+
+        // update price
+        $el.find('.price').html(data.price);
+
+        // update title
+        $el.find('.title').html(data.title);
+
+        // update productId data
+        $el.data('productId', data.id);
+
+        // is it owned? (remove_ads only really)
+        if (data.owned) {
+            $el.addClass('owned');
+        }
+        else {
+            $el.removeClass('owned');
+        }
+
+        // update UI - remove ads or update lives count
+        if (nice_id == 'lives') {
+            // update localstorage & var
+            num_lives += 10;
+            update_lives();
+        }
+        else if (nice_id == 'lives25') {
+            num_lives += 25;
+            update_lives();
+        }
+        else if (nice_id == 'lives50') {
+            num_lives += 50;
+            update_lives();
+        }
+        else if (nice_id == 'remove_ads') {
+            remove_ads();
+        }
+    }
+
+    function update_lives() {
+        window.localStorage.setItem('helicopter_lives', num_lives);
+        console.log(num_lives)
+        $lives.html(num_lives);
+    }
+
+    function remove_ads() {
+        no_ads = true;
+        window.localStorage.setItem('helicopter_no_ads', true);
+        AdMob.hideBanner();
+    }
+
+    function show_purchase() {
+        $no_lives.hide();
+        $life_timer_wrap.hide();
+
+        if (num_lives == 0) {
+            $no_lives.show();
+        }
+
+        if (num_lives < 10){
+            $life_timer_wrap.show();
+        }
+
+        $purchase.show();
+        setTimeout(function(){
+            $purchase.addClass('show-purchase');
+        },10);
+    }
 
 
 

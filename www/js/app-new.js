@@ -98,7 +98,7 @@ function init(){
     var max_top = window_height /2; //dont want a gap bigger than half the screen, too easy
     var total_gap = window_height - floor_height - roof_height;
     var gamecenter_auth = false;
-    var $lives = $('#lives');
+    var $lives = $('#lives-count');
     var num_lives = window.localStorage.getItem('helicopter_lives') ? window.localStorage.getItem('helicopter_lives') : 10;
     var no_ads = window.localStorage.getItem('helicopter_no_ads') ? window.localStorage.getItem('helicopter_no_ads') : false;
     var $purchase = $('#purchase');
@@ -121,10 +121,12 @@ function init(){
     show_start();
 
     // auth gamecenter
-    do_gamecenter_auth();
+    if (is_device)
+        do_gamecenter_auth();
 
     // setup purchases
-    setup_purchases();
+    if (is_device)
+        setup_purchases();
 
     $instructions.on(start_event, function(){
         $body.on(start_event, copter_touchstart).on(end_event, copter_touchend);
@@ -551,18 +553,7 @@ function init(){
     });
 
     // Setup remove ads button - purchase, and store the fact user has purchased
-    // TODO!
-    $('.remove-ads').on(end_event, function(){
-        if (is_device)
-            var platform = device.platform;
-        else
-            var platform = 'android';
-
-        if(platform.match(/ios/i))
-            window.open('itms-apps://itunes.apple.com/us/app/domainsicle-domain-name-search/id511364723?ls=1&mt=8'); // or itms://
-        else
-            window.open('market://details?id=co.uk.rp_digital.helicopter_paid');
-    });
+    $('.remove-ads').on(end_event, show_purchase);
 
     // TODO???
     $('#share').on(end_event, function() {
@@ -771,6 +762,7 @@ function init(){
 
     function update_lives() {
         window.localStorage.setItem('helicopter_lives', num_lives);
+        console.log(num_lives)
         $lives.html(num_lives);
     }
 
@@ -796,6 +788,13 @@ function init(){
         setTimeout(function(){
             $purchase.addClass('show-purchase');
         },10);
+    }
+
+    function hide_purchase() {
+        $purchase.removeClass('show-purchase');
+        setTimeout(function(){
+            $purchase.hide();
+        },300);
     }
 
 
