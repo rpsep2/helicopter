@@ -34,16 +34,19 @@
     <preference name="DisallowOverscroll" value="true" />
     <preference name="webviewbounce" value="false" />
     <preference name="permissions" value="none"/>
+    <preference name="SuppressesLongPressGesture" value="true" />
+    <preference name="Suppress3DTouch" value="true" />
 
     <!-- Plugins -->
-    <plugin spec="https://github.com/apache/cordova-plugin-vibration" source="git" />
-    <plugin spec="https://github.com/apache/cordova-plugin-dialogs" source="git" />
-    <plugin spec="https://github.com/apache/cordova-plugin-media" source="git" />
-    <plugin spec="https://github.com/floatinghotpot/cordova-admob-pro" source="git" />
-    <plugin spec="https://github.com/apache/cordova-plugin-splashscreen" source="git" />
-    <plugin spec="https://github.com/apache/cordova-plugin-whitelist" source="git" />
-    <plugin spec="https://github.com/EddyVerbruggen/cordova-plugin-ios-longpress-fix" source="git" />
-    <plugin spec="https://github.com/leecrossley/cordova-plugin-game-center" source="git" />
+    <plugin spec="https://github.com/apache/cordova-plugin-vibration.git" source="git" />
+    <plugin spec="https://github.com/apache/cordova-plugin-dialogs.git" source="git" />
+    <plugin spec="https://github.com/apache/cordova-plugin-media.git" source="git" />
+    <plugin spec="https://github.com/apache/cordova-plugin-device.git" source="git" />
+    <plugin spec="https://github.com/floatinghotpot/cordova-admob-pro.git" source="git" />
+    <plugin spec="https://github.com/apache/cordova-plugin-splashscreen.git" source="git" />
+    <plugin spec="https://github.com/apache/cordova-plugin-whitelist.git" source="git" />
+    <plugin spec="https://github.com/leecrossley/cordova-plugin-game-center.git" source="git" />
+    <plugin spec="https://github.com/Telerik-Verified-Plugins/InAppPurchase.git" source="git" />
 
     <!--<plugin name="org.apache.cordova.dialogs" />
     <plugin name="org.apache.cordova.media" spec="0.2.8" source="pgb" />

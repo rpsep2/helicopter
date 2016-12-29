@@ -9,6 +9,11 @@
 	-webkit-user-select: none;
 }
 
+html{
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+}
+
 #container{
 	position: absolute;
 	top:0px;
@@ -26,6 +31,8 @@
 	background: linear-gradient(#319ffd, #41d0fa);
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#319ffd', endColorstr='#41d0fa');
 	zoom: 1;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
 }
 
 #container.restart:after{
@@ -63,6 +70,8 @@
 	width:100%;
 	height:100%;
 	overflow:hidden;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
 }
 
 #helicopter{
@@ -195,6 +204,17 @@
 	z-index:5;
 }
 
+#lives{
+	position: absolute;
+	top:5px;
+	left:5px;
+	font:bold 13px Arial, Sans-serif;
+	color:#fff;
+	background:url(../images/helicopter.png) no-repeat 0px center;
+	background-size: 14px auto;
+	padding:0 0 0 20px;
+}
+
 #score{
 	position: absolute;
 	top: 25px;
@@ -205,6 +225,109 @@
 	text-align: center;
 	width: 100%;
 	letter-spacing: -1px;
+}
+
+/* purchase screen */
+#purchase{
+	display:none;
+	position: absolute;
+	top:0px;
+	left:0px;
+	bottom:0px;
+	width:100%;
+	height:100%;
+	overflow: hidden;
+	z-index:15;
+	background:rgba(0,0,0,0.5);
+	-webkit-transform:translate3d(100%,0,0);
+	-webkit-transition:all 0.2s ease-out;
+}
+
+#purchase.show-purchase{
+	-webkit-transform:translate3d(0,0,0);
+}
+
+.purchase-inner{
+	position: absolute;
+	top:40px;
+	bottom:100px;
+	left:10px;
+	right:10px;
+	background:#f4d490;
+	border-radius: 5px;
+	padding:15px;
+	overflow-y: auto;
+}
+
+#no-lives{
+	display: none;
+	float: left;
+	width:100%;
+	text-align: center;
+	margin:0 0 10px 0;
+	color:#494949;
+	font:bold 18px Arial, Sans-serif;
+}
+
+#life-timer-wrap{
+	display: none;
+	float: left;
+	width:100%;
+	text-align: center;
+	margin:0 0 10px 0;
+	color:#494949;
+	font:bold 16px Arial, Sans-serif;
+}
+
+#life-timer-wrap span{
+	display: inline;
+	font-size:20px;
+}
+
+.product{
+	display: inline-block;
+	width:90px;
+	height:auto;
+	vertical-align: middle;
+	margin:5px;
+	text-align: center;
+}
+
+.product#remove_ads{
+	margin:10px 0 0 0;
+	width:100%;
+}
+
+.product .title{
+	font:bold 15px Arial, Sans-serif;
+}
+
+.product .price{
+	display: inline-block;
+	width:80px;
+	height:35px;
+	margin:5px 5px 0 5px;
+	font:16px/35px Helvetica, Arial, Sans-serif;
+	color:#fff;
+	text-align: center;
+	background-color:#25970a;
+	letter-spacing: -1px;
+	border-radius:3px;
+	border-bottom:2px solid #25970a;
+}
+
+.product .price span{
+	float:left;
+	width:76px;
+	margin:2px;
+	height:31px;
+	background: #37c117;
+	line-height: 31px;
+}
+
+.product .price.hover{
+	border:none;
+	margin-top:2px;
 }
 
 /* ---------- gameover screen ------------------- */
@@ -316,9 +439,10 @@
 
 #gameover-buttons-wrapper{
 	width: 200px;
+	height: 35px;
 	display: block;
 	position: absolute;
-	bottom: 150px;
+	bottom: 120px;
 	left: 50%;
 	margin-left: -100px;
 }
@@ -359,13 +483,16 @@
 
 #leaderboard{
 	float: left;
+	position: absolute;
+	top:240px;
+	left:50%;
 	width: 90px;
 	height: 35px;
 	font: 20px/35px Helvetica, Arial, Sans-serif;
 	color: #fff;
 	text-align: center;
 	background-color: #a96601;
-	margin: 0 20px 70px 0;
+	margin: 0 0 0 -45px;
 	letter-spacing: -1px;
 }
 
@@ -485,9 +612,10 @@
 
 #intro-buttons-wrapper{
 	width: 200px;
+	height: 35px;
 	display: block;
 	position: absolute;
-	bottom: 150px;
+	bottom: 120px;
 	left: 50%;
 	margin-left: -100px;
 }
