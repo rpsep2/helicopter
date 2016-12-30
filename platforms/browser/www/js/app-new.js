@@ -19,10 +19,11 @@ function onDeviceReady(){
     // complex CAN be stopped/ looped
     // simple can not - they just play.
     NativeAudio = window.plugins.NativeAudio;
-    NativeAudio.preloadComplex('bg_sound', 'sounds/background.wav', 0.5, 1, 0, function(msg){
+    NativeAudio.preloadComplex('bg_sound', 'sounds/background.wav', 1, 1, 0, function(msg){
     }, function(msg){
         console.log( 'error: ' + msg );
     });
+    NativeAudio.setVolumeForComplexAsset('bg_sound', 0.2, function(){}, function(){});
 
     NativeAudio.preloadComplex('fly_sound', 'sounds/fly.mp3', 1, 1, 0, function(msg){
     }, function(msg){
@@ -52,32 +53,31 @@ function onDeviceReady(){
     if( /(android)/i.test(navigator.userAgent) ){
         admobid = { // for Android
             banner: 'ca-app-pub-8099513553195534/7510762403',
-            interstitial: 'ca-app-pub-8099513553195534/1464228807',
+            interstitial: 'ca-app-pub-8099513553195534/1464228807'
         };
     }else if(/(ipod|iphone|ipad)/i.test(navigator.userAgent)){
         admobid = { // for iOS
             banner: 'ca-app-pub-8099513553195534/7510762403',
-            interstitial: 'ca-app-pub-8099513553195534/1464228807',
+            interstitial: 'ca-app-pub-8099513553195534/1464228807'
         };
     }else{
         admobid = { // for Windows Phone
             banner: 'ca-app-pub-8099513553195534/7510762403',
-            interstitial: 'ca-app-pub-8099513553195534/1464228807',
+            interstitial: 'ca-app-pub-8099513553195534/1464228807'
         };
     }
 
     //Ads
     if(typeof AdMob != 'undefined' && !no_ads){
         AdMob.createBanner({
-            adId: admobid.banner,
-            position: AdMob.AD_POSITION.BOTTOM_CENTER,
-            autoShow: true,
-            overlap: true,
+            adId : admobid.banner,
+            position : AdMob.AD_POSITION.BOTTOM_CENTER,
+            autoShow : true,
             isTesting: false, // REMOVE FOR PROD!!
         });
 
         // prepare a new interstitual
-        AdMob.prepareInterstitial( {adId:admobid.interstitial, autoShow:false, overlap: true} );
+        AdMob.prepareInterstitial( {adId:admobid.interstitial, autoShow:false} );
     }
 
     init();
@@ -176,7 +176,7 @@ function init(){
         $body.on(start_event, copter_touchstart).on(end_event, copter_touchend);
         $instructions.hide();
         create_obstacles = setInterval(create_obstacle, create_obstacle_speed);
-        check_collisions = setInterval(check_collision, 20);
+        check_collisions = setInterval(check_collision, 50);
         increase_speed = setInterval(increment_speed, 1000);
     });
 
@@ -454,7 +454,7 @@ function init(){
             $(ob).css({
                 '-webkit-transition': 'none',
                 '-webkit-transform': 'translate3d(' + current_obstacle_left + 'px,'+ current_obstacle_top +'px,0)'
-            }).removeClass('moving');
+            });
         });
 
         //make helicopter plumit to death
@@ -527,7 +527,7 @@ function init(){
     $('#ok').on(end_event, show_start);
 
     function show_start(){
-        // show the interstitial, and prepare another one ready
+        // show the interstitial later, e.g. at end of game level
         var rand_num = randomNumberFromRange(1, 6);
         if(rand_num == 2 && is_device && typeof AdMob != 'undefined' && !no_ads){
             AdMob.showInterstitial();

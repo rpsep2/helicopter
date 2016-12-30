@@ -40,7 +40,8 @@
     <!-- Plugins -->
     <plugin spec="https://github.com/apache/cordova-plugin-vibration.git" source="git" />
     <plugin spec="https://github.com/apache/cordova-plugin-dialogs.git" source="git" />
-    <plugin spec="https://github.com/apache/cordova-plugin-media.git" source="git" />
+    <!--<plugin spec="https://github.com/apache/cordova-plugin-media.git" source="git" />-->
+    <plugin spec="https://github.com/floatinghotpot/cordova-plugin-nativeaudio" source="git" />
     <plugin spec="https://github.com/apache/cordova-plugin-device.git" source="git" />
     <plugin spec="https://github.com/apache/cordova-plugin-statusbar.git" source="git" />
     <plugin spec="https://github.com/floatinghotpot/cordova-admob-pro.git" source="git" />
