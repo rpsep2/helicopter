@@ -537,7 +537,7 @@ function init(){
     }
 
     //setup hovers
-    $('#start, #ok, .rate, .remove-ads, #leaderboard, #share').on(start_event, function(){
+    $('#start, #ok, .rate, .remove-ads, .leaderboard, #share, .purchase-product').on(start_event, function(){
         $(this).addClass('hover');
     }).on(end_event, function(){
         $(this).removeClass('hover');
@@ -564,7 +564,7 @@ function init(){
     $('#share').on(end_event, function() {
     });
 
-    $('#leaderboard').on(end_event, show_leaderboard);
+    $('.leaderboard').on(end_event, show_leaderboard);
 
     function show_leaderboard() {
         if (is_device) {
@@ -713,7 +713,7 @@ function init(){
 
         // When the store is ready all products are loaded and in their "final" state.
         store.ready(function() {
-            console.log("The store is ready");
+            alert("The store is ready");
         });
 
         // Deal with errors:
@@ -809,7 +809,8 @@ function init(){
         },300);
     }
 
-    $('.purchase-product').on('end_event', function() {
+    $('.purchase-product').on(end_event, function() {
+        alert(productId);
         var productId = $(this).closest('.product').data('productId');
         store.order(productId);
     });

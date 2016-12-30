@@ -167,7 +167,7 @@ html{
 	bottom:0px;
 	left:0px;
 	width:100%;
-	height:30px;
+	height:75px;
 	z-index:5;
 	background-color: #f3cb75
 }
@@ -185,7 +185,7 @@ html{
 
 #trees{
 	position: absolute;
-	bottom:25px;
+	bottom:70px;
 	left:0px;
 	width:100%;
 	height:127px;
@@ -285,25 +285,22 @@ html{
 }
 
 .product{
-	display: inline-block;
-	width:90px;
-	height:auto;
-	vertical-align: middle;
-	margin:5px;
-	text-align: center;
-}
-
-.product#remove_ads{
-	margin:10px 0 0 0;
-	width:100%;
+	clear: both;
+	display: block;
+	padding:10px 15px;
+	border:2px solid #555;
+	border-radius: 5px;
+	background:#fff;
+	margin:5px 0 0 0;
 }
 
 .product .title{
-	font:bold 15px Arial, Sans-serif;
+	font:bold 15px/35px Arial, Sans-serif;
+	height: 35px;
 }
 
 .product .price{
-	display: inline-block;
+	float: right;
 	width:80px;
 	height:35px;
 	margin:5px 5px 0 5px;
@@ -481,7 +478,7 @@ html{
 	letter-spacing: -1px;
 }
 
-#leaderboard{
+.leaderboard{
 	float: left;
 	position: absolute;
 	top:240px;
@@ -660,13 +657,13 @@ html{
 #ok,
 .rate,
 .remove-ads,
-#leaderboard,
+.leaderboard,
 #share{
 	border-radius:3px;
 	border-bottom:2px solid #25970a;
 }
 
-#leaderboard,
+.leaderboard,
 #share{
 	border-bottom-color: #a96601;
 }
@@ -680,7 +677,7 @@ html{
 #ok span,
 #start span,
 .remove-ads span,
-#leaderboard span,
+.leaderboard span,
 #share span{
 	float:left;
 	width:86px;
@@ -690,12 +687,12 @@ html{
 	line-height: 31px;
 }
 
-#leaderboard span,
+.leaderboard span,
 #share span{
 	background-color:#ff9900;
 }
 
-#leaderboard span{
+.leaderboard span{
 	background-image:url(../images/leaderboard-icon.png);
 	background-repeat:no-repeat;
 	background-position: center;
@@ -710,7 +707,7 @@ html{
 #ok.hover,
 .rate.hover,
 .remove-ads.hover,
-#leaderboard.hover,
+.leaderboard.hover,
 #share.hover{
 	border:none;
 	margin-top:2px;
