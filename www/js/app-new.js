@@ -12,13 +12,25 @@ else
 var no_ads = window.localStorage.getItem('helicopter_no_ads') ? window.localStorage.getItem('helicopter_no_ads') : false;
 var fly_sound;
 var crash_sound;
+var bg_sound;
+var click_sound;
+var success_sound;
+var highscore_sound;
 var admobid = {};
 
 function onDeviceReady(){
     fly_sound = new Media('sounds/fly.mp3');
     crash_sound = new Media('sounds/crash.mp3');
+    bg_sound = new Media('sounds/background.wav');
+    click_sound = new Media('sounds/click.wav');
+    success_sound = new Media('sounds/success.mp3');
+    highscore_sound = new Media('sounds/highscore.mp3');
     fly_sound.setVolume(1);
     crash_sound.setVolume(1);
+    bg_sound.setVolume(0.5);
+    click_sound.setVolume(1);
+    success_sound.setVolume(1);
+    highscore_sound.setVolume(1);
 
     if( /(android)/i.test(navigator.userAgent) ){
         admobid = { // for Android
@@ -55,6 +67,10 @@ function onDeviceReady(){
     setTimeout(function() {
         StatusBar.hide();
         navigator.splashscreen.hide();
+        // loop to play audio in background infinitely. This also allows user to control volume rather than ringer
+        // constantly. Otherwise user can only control app volume when a sound is playing
+        // eg when the copter is actually flying, or crashing only.
+        bg_sound.play({ numberOfLoops: 10000, playAudioWhenScreenIsLocked : false});
     }, 4000);
 }
 
@@ -106,6 +122,9 @@ function init(){
     var $no_lives = $('#no-lives');
     var $life_timer_wrap = $('#life-timer-wrap');
     var $life_timer = $('#life-timer');
+    var life_regen_every = 1; // in minutes
+    var time_until_next_life = (life_regen_every * 60); //  30 minutes in seconds
+    var life_regen_counter;
 
     /* --  SETTINGS -- */
     var speed = 1.2; // set the speed depending on difficulty selected, lower = harder
@@ -128,6 +147,9 @@ function init(){
     // setup purchases
     if (is_device)
         setup_purchases();
+
+    // resume timer for lives, add any lives etc
+    init_life_regen();
 
     $instructions.on(start_event, function(){
         $body.on(start_event, copter_touchstart).on(end_event, copter_touchend);
@@ -157,7 +179,7 @@ function init(){
         setTimeout(function(){
             // play a flying sound
             if(is_device){
-                fly_sound.play();
+                fly_sound.play({playAudioWhenScreenIsLocked : false});
             }
         },20);
     }
@@ -356,6 +378,13 @@ function init(){
     function add_score(){
         cur_score = cur_score+=1;
         $score.text(cur_score);
+
+        if (is_device) {
+            success_sound.play({playAudioWhenScreenIsLocked : false});
+            setTimeout(function(){
+                success_sound.release();
+            },1500);
+        }
     }
 
     function show_gameover(hit_bottom, copter_top){
@@ -431,7 +460,10 @@ function init(){
             window.localStorage.setItem('helicopter_best_score', best_score);
             $end_best_score.html('<span>BEST SCORE</span>' + game_score + '<span class="new">NEW!</span>').addClass('new-best');
 
-            // TODO: play a success kind of sound
+            highscore_sound.play();
+            setTimeout(function() {
+                highscore_sound.release();
+            }, 3500);
         }
         else {
             $end_best_score.html('<span>BEST SCORE</span>'+best_score);
@@ -446,6 +478,12 @@ function init(){
         num_lives -= 1;
         window.localStorage.setItem('helicopter_lives', num_lives);
         update_lives();
+
+        // we are now on 9 lives - init life regen
+        if (num_lives == 9) {
+            window.localStorage.setItem('helicopter_time_since_life', new Date());
+            init_life_regen();
+        }
 
         setTimeout(function(){
             // remove any obstacles
@@ -537,14 +575,19 @@ function init(){
     }
 
     //setup hovers
-    $('#start, #ok, .rate, .remove-ads, .leaderboard, #share, .purchase-product').on(start_event, function(){
+    $('#start, #ok, .rate, .remove-ads, .leaderboard, #share, .purchase-product, #close-purchase').on(start_event, function(){
         $(this).addClass('hover');
     }).on(end_event, function(){
         $(this).removeClass('hover');
+        if (is_device) {
+            click_sound.play({playAudioWhenScreenIsLocked : false});
+            setTimeout(function(){
+                click_sound.release();
+            },1500);
+        }
     });
 
     // Setup Rate button
-    // TODO!! update iOS url
     $('.rate').on(end_event, function(){
         if (is_device)
             var platform = device.platform;
@@ -552,7 +595,7 @@ function init(){
             var platform = 'android';
 
         if(platform.match(/ios/i))
-            window.open('itms-apps://itunes.apple.com/us/app/domainsicle-domain-name-search/id511364723?ls=1&mt=8'); // or itms://
+            window.open('itms-apps://itunes.apple.com/app/helicopter!/id1189567725?ls=1&mt=8');
         else
             window.open('market://details?id=co.uk.rp_digital.helicopter_free');
     });
@@ -645,8 +688,8 @@ function init(){
 
         // A consumable 10 lives product
         store.register({
-            id:    'co.uk.jobooz.helicopter.lives',
-            alias: '10 lives',
+            id:    'helicopter_lives',
+            alias: 'Helicopter Lives',
             type:   store.CONSUMABLE
         });
 
@@ -666,8 +709,8 @@ function init(){
 
         // A non-consumable (one-off) 'Full version / no ads' product
         store.register({
-            id:    'co.uk.jobooz.helicopter.remove_ads',
-            alias: 'no ads',
+            id:    'remove_ads',
+            alias: 'Remove Ads',
             type:   store.NON_CONSUMABLE
         });
 
@@ -677,9 +720,10 @@ function init(){
         // When any product gets updated (or refreshed), its details are passed to app
         store.when("product").updated(function (p) {
             // This is a good place to prepare or render the UI based on these refreshed details:
-            var productId = p.id;
-            var nice_id = productId.split('.').pop();
             if (p.valid) {
+                var productId = p.id;
+                var nice_id = productId.split('.').pop();
+                alert('yeh valid product id: ' + productId)
                 var data = {
                     id: productId, // call store.order(id) to buy this product
                     title: p.title,
@@ -698,27 +742,25 @@ function init(){
         });
 
         // When the purchase of lives is approved, update lives count
-        store.when("10 lives").approved(function (order) {
+        store.when("Helicopter Lives").approved(function (order) {
             num_lives += 10;
             update_lives();
             hide_purchase();
+            // this will actually stop life regen to stop users being able to regen lives above 10
+            clearInterval(life_regen_counter);
+            init_life_regen();
             order.finish();
         });
 
         // When the purchase of no adverts, update
-        store.when("no ads").approved(function (order) {
+        store.when("Remove Ads").approved(function (order) {
             remove_ads();
+            hide_purchase();
             order.finish();
-        });
-
-        // When the store is ready all products are loaded and in their "final" state.
-        store.ready(function() {
-            alert("The store is ready");
         });
 
         // Deal with errors:
         // -----------------
-
         store.error(function(error) {
             navigator.notification.alert('ERROR ' + error.code + ': ' + error.message);
         });
@@ -735,6 +777,7 @@ function init(){
         // get the el
         var productId = data.id;
         var nice_id = productId.split('.').pop();
+        alert(nice_id)
         var $el = $('#' + nice_id);
 
         // update price
@@ -761,13 +804,13 @@ function init(){
             update_lives();
         }*/
 
-        // remove ads is non consumable, so if its owned, make sure we remove ads
-        // localstorage could get deleted
+        // remove ads is non consumable, so if its already owned, make sure we remove ads
+        // localstorage could get deleted, not be up to date somehow..
         if (nice_id == 'remove_ads' && data.owned) {
             remove_ads();
         }
         else {
-            $el.removeClass('owned');
+            $el.show();
         }
     }
 
@@ -810,10 +853,85 @@ function init(){
     }
 
     $('.purchase-product').on(end_event, function() {
-        alert(productId);
         var productId = $(this).closest('.product').data('productId');
         store.order(productId);
     });
+
+    $('#close-purchase').on(end_event, hide_purchase);
+
+    function init_life_regen() {
+        // if user has 10 or more lives (purchased or regen to max 10 already)
+        // cancel regen
+        if (num_lives >= 10) {
+            window.localStorage.removeItem('helicopter_time_since_life');
+            clearInterval(life_regen_counter);
+            return false;
+        }
+
+        var now = new Date();
+        // default to now but this should always be set if we get to here
+        var time_last_life = (window.localStorage.getItem('helicopter_time_since_life') && window.localStorage.getItem('helicopter_time_since_life') != 'Invalid Date') ? new Date(window.localStorage.getItem('helicopter_time_since_life')) : now;
+
+        var time_diff = now - time_last_life; // gives milliseconds
+        var diff_seconds = Math.floor(time_diff / 1000); // whole seconds
+        var diff_minutes = Math.floor(time_diff / 60000); //whole minutes
+
+        // workout how many lives, if any, we need to add
+        var additional_lives = Math.floor(diff_minutes / life_regen_every);
+        var seconds_since_last_life;
+
+        // minutes since last life will be based on how long ago we added the last life for
+        if (additional_lives >= 1) {
+            num_lives = parseInt(num_lives) + parseInt(additional_lives);
+
+            // could have been days since they last used the app - would generate hundreds of lives. max 10
+            if (num_lives > 10)
+                num_lives = 10;
+
+            seconds_since_last_life = diff_seconds - (additional_lives * (life_regen_every * 60)); // total diff minus lives added (in seconds)
+            update_lives();
+        }
+        // else, its just the time diff
+        else{
+            seconds_since_last_life = diff_seconds;
+        }
+
+        // are we now at 10? dont bother with this stuff then
+        // update localstorage date since last life. minus milliseconds
+        window.localStorage.setItem('helicopter_time_since_life', new Date(now - (seconds_since_last_life * 1000)));
+
+        // now we can display how many minutes **TO** the next life
+        time_until_next_life = (life_regen_every * 60) - seconds_since_last_life;
+
+        // kill then restart the countdown
+        if (life_regen_counter)
+            clearInterval(life_regen_counter);
+
+        life_regen_counter = setInterval(life_regen_countdown, 1000);
+    }
+
+    // time until next life is in seconds
+    function life_regen_countdown() {
+        var mins = time_pad(Math.floor(time_until_next_life / 60)); // whole minutes
+        var seconds = time_pad(time_until_next_life % 60); // remainder
+        $life_timer.html(mins + ':' + seconds);
+        time_until_next_life -= 1;
+
+        if (time_until_next_life < 0) {
+            // stop the interval
+            clearInterval(life_regen_counter);
+
+            // start this again, it will auto add 1 life
+            init_life_regen();
+        }
+    }
+
+    function time_pad(num) {
+        if (num < 10)
+            return '0' + num;
+        else
+            return num;
+    }
 
 
 

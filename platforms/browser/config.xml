@@ -23,7 +23,7 @@
     <preference name="webviewbounce" value="false" />
     <preference name="permissions" value="none" />
     <preference name="SuppressesLongPressGesture" value="true" />
-    <preference name="Suppress3DTouch" value="true" />
+    <preference name="Suppresses3DTouchGesture" value="true" />
     <allow-navigation href="*" />
     <allow-intent href="*" />
     <icon src="icon.png" />
@@ -35,8 +35,11 @@
     <icon gap:density="xxxhdpi" gap:platform="android" height="192" src="images/icons/icon-192-xxxhdpi.png" width="192" />
     <icon gap:platform="ios" height="57" src="images/icons/icon-57.png" width="57" />
     <icon gap:platform="ios" height="72" src="images/icons/icon-72.png" width="72" />
+    <icon gap:platform="ios" height="76" src="images/icons/icon-76.png" width="76" />
     <icon gap:platform="ios" height="114" src="images/icons/icon-114.png" width="114" />
+    <icon gap:platform="ios" height="120" src="images/icons/icon-120.png" width="120" />
     <icon gap:platform="ios" height="144" src="images/icons/icon-144.png" width="144" />
+    <icon gap:platform="ios" height="152" src="images/icons/icon-152.png" width="152" />
     <gap:splash src="splash.png" />
     <gap:splash gap:density="ldpi" gap:platform="android" src="images/screens/splash-200x320-ldpi.png" />
     <gap:splash gap:density="mdpi" gap:platform="android" src="images/screens/splash-320x480-mdpi.png" />

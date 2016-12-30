@@ -48,8 +48,13 @@
 	<!-- purchase screen -->
 	<div id="purchase">
 		<div class="purchase-inner">
-			<p id="no-lives">You don't have any helicopters left!</p>
-			<p id="life-timer-wrap">Next helicopter ready in <span id="life-timer">30:00</span></p>
+			<span id="close-purchase">&times;</span>
+			<p id="no-lives">No helicopters left!</p>
+			<img src="images/helicopter.png" />
+			<div id="life-timer-wrap">
+				<p>Time to next helicopter:</p>
+				<span id="life-timer">00:00</span>
+			</div>
 
 			<div id="products">
 				<div id="lives" class="product">
