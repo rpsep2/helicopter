@@ -6,6 +6,7 @@
 <script src="cordova.js"></script>
 <link rel="stylesheet" href="css/style.css">
 <script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/html2canvas.js"></script>
 <script type="text/javascript" src="js/app-new.js"></script>
 </head>
 <body>
@@ -21,7 +22,10 @@
 			<span id="medium">MEDIUM</span>
 			<span id="hard">HARD</span>
 		</div>
-		<div class="leaderboard"><span></span></div>
+		<div class="social-buttons-wrap">
+			<div class="leaderboard"><span></span></div>
+			<div class="share"><span>SHARE</span></div>
+		</div>
 		<div id="intro-buttons-wrapper">
 			<div id="start"><span>START</span></div>
 			<div class="rate"><span>RATE</span></div>
@@ -37,7 +41,10 @@
 	<div id="gameover">
 		<div id="end-score"><span>GAME SCORE</span>0</div>
 		<div id="end-best-score"><span>BEST SCORE</span>0<span class="new">NEW!</span></div>
-		<div class="leaderboard"><span></span></div>
+		<div class="social-buttons-wrap">
+			<div class="leaderboard"><span></span></div>
+			<div class="share"><span>SHARE</span></div>
+		</div>
 		<div id="gameover-buttons-wrapper">
 			<div id="ok"><span>OK</span></div>
 			<div class="rate"><span>RATE</span></div>
@@ -57,7 +64,13 @@
 			</div>
 
 			<div id="products">
-				<div id="lives" class="product">
+				<div id="helicopter_lives_free" class="product" data-productId="free">
+					<img src="images/icon-lives.png">
+					<p class="title" class="product">10 Helicopters</p>
+					<span class="price purchase-product free"><span>FREE</span></span>
+				</div>
+				<div id="helicopter_lives" class="product">
+					<img src="images/icon-lives.png">
 					<p class="title" class="product">10 Helicopters</p>
 					<span class="price purchase-product"><span>£0.79</span></span>
 				</div>
@@ -70,6 +83,7 @@
 					<span class="price purchase-product">£2.29</span>
 				</div>-->
 				<div id="remove_ads" class="product">
+					<img src="images/icon-noads.png">
 					<p class="title">Remove Adverts</p>
 					<span class="price purchase-product"><span>£0.79</span></span>
 				</div>

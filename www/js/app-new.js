@@ -138,9 +138,11 @@ function init(){
     var $no_lives = $('#no-lives');
     var $life_timer_wrap = $('#life-timer-wrap');
     var $life_timer = $('#life-timer');
-    var life_regen_every = 1; // in minutes
+    var life_regen_every = 5; // in minutes
     var time_until_next_life = (life_regen_every * 60); //  30 minutes in seconds
     var life_regen_counter;
+    var $free_helicopters = $('#helicopter_lives_free');
+    var has_shared_before = window.localStorage.getItem('helicopter_has_shared') ? true : false;
 
     /* --  SETTINGS -- */
     var speed = 1.2; // set the speed depending on difficulty selected, lower = harder
@@ -171,6 +173,9 @@ function init(){
         $('#sound-toggle').addClass('mute');
         update_sound();
     }
+
+    // on resume, recalculate lifes
+    document.addEventListener('resume', init_life_regen);
 
     $instructions.on(start_event, function(){
         $body.on(start_event, copter_touchstart).on(end_event, copter_touchend);
@@ -240,7 +245,7 @@ function init(){
         // at 20+ we want ALL blocks to be moving
         if (cur_score >= 30) {
             moving_block = 1;
-            block_height = block_height / 1.5;
+            block_height = block_height / 1.4;
         }
         else if (cur_score >= 20) {
             moving_block = 1;
@@ -353,7 +358,7 @@ function init(){
 
         if(copter_top <= 20){
             hit = true;
-            show_gameover();
+            show_gameover(false, copter_top, true);
             //stop this continuing
             return false;
         }
@@ -378,6 +383,7 @@ function init(){
                     if(copter_bottom > block_top){
                         if(copter_left < block_right){
                             hit = true;
+                            $('.obstacle').addClass('hit');
                         }
                     }
                 }
@@ -385,7 +391,7 @@ function init(){
 
             if(hit){
                 //clear all looping functions
-                show_gameover();
+                show_gameover(false, copter_top);
 
                 //stop this continuing
                 return false;
@@ -404,15 +410,17 @@ function init(){
         }
     }
 
-    function show_gameover(hit_bottom, copter_top){
+    function show_gameover(hit_bottom, copter_top, hit_top){
         //remove touch listeners to control copter
         $body.off();
 
         if(is_device){
             //vibrate
-            //var platform = device.platform;
-            //if(platform.match(/ios/i))
+            var platform = device.platform;
+            if(platform.match(/ios/i)) {
+                navigator.vibrate(300);
                 //navigator.notification.vibrate(300);
+            }
 
             //stop flying sound
             NativeAudio.stop('fly_sound');
@@ -461,8 +469,9 @@ function init(){
         //if we hit the bottom, dont move anything just keep still
         if(hit_bottom)
             $helicopter.addClass('fall').removeAttr('style').show().css('top', Math.round(copter_top));
-        else
+        else {
             $helicopter.addClass('fall').css('-webkit-transform','translate3d(0, '+ parseInt(window_height - start_pos - floor_height - copter_width + 20) +'px, 0) rotate(90deg)');
+        }
 
         //check best score + update if new best + show user
         best_score = window.localStorage.getItem('helicopter_best_score');
@@ -589,7 +598,7 @@ function init(){
     }
 
     //setup hovers
-    $('#start, #ok, .rate, .remove-ads, .leaderboard, #share, .purchase-product, #close-purchase').on(start_event, function(){
+    $('#start, #ok, .rate, .remove-ads, .leaderboard, .share, .purchase-product, #close-purchase').on(start_event, function(){
         $(this).addClass('hover');
     }).on(end_event, function(){
         $(this).removeClass('hover');
@@ -615,9 +624,65 @@ function init(){
     $('.remove-ads').on(end_event, show_purchase);
     $lives.on(end_event, show_purchase);
 
-    // TODO???
-    $('#share').on(end_event, function() {
+    $('.share').on(end_event, function() {
+        html2canvas(document.body, {
+            onrendered: function(canvas) {
+                var base64 = canvas.toDataURL();
+                share_score(base64);
+            }
+        });
     });
+
+    function share_score(base64, free_lives) {
+        // Beware: passing a base64 file as 'data:' is not supported on Android 2.x: https://code.google.com/p/android/issues/detail?id=7901#c43
+        // Hint: when sharing a base64 encoded file on Android you can set the filename by passing it as the subject (second param)
+        if (is_device)
+            if (free_lives) {
+                var msg = 'Check out this Helicopter! game on the App Store';
+                if (best_score) {
+                    msg = msg + ' - can you beat my score of ' + best_score;
+                }
+                window.plugins.socialsharing.share(msg, 'Helicopter!', base64, null, function(result) {
+                    if (result == true) {
+                        add_lives_for_share();
+                    }
+                    else {
+                        navigator.notification.alert("Don't worry, you can share at any time for your free Helicopters!", function(){}, 'Share Not Completed');
+                    }
+                });
+            }
+            else {
+                if (best_score) {
+                    var msg = 'I got a new best score of ' + best_score + ' on Helicopter!';
+                    var title = 'Helicopter Highscore';
+                }
+                else {
+                    var msg = 'Check out this Helicopter! game on the App Store';
+                    var title = 'Helicopter!';
+                }
+                window.plugins.socialsharing.share(msg, title, base64, null, function(result) {
+                    if (result == true && !has_shared_before) {
+                        add_lives_for_share();
+                    }
+                });
+            }
+    }
+
+    function add_lives_for_share() {
+        navigator.notification.alert('Have 10 helicopters on us', function(){}, 'Thanks for sharing!');
+        num_lives += 10;
+        update_lives();
+        // this will actually stop life regen to stop users being able to regen lives above 10
+        if (life_regen_counter)
+            clearInterval(life_regen_counter);
+
+        init_life_regen();
+
+        // set to true
+        has_shared_before = true;
+        window.localStorage.setItem('helicopter_has_shared', 'true');
+        $free_helicopters.hide();
+    }
 
     $('.leaderboard').on(end_event, show_leaderboard);
 
@@ -700,7 +765,7 @@ function init(){
 
         // A consumable 10 lives product
         store.register({
-            id:    'co.uk.jobooz.helicopter.helicopter_lives',
+            id:    'helicopter_lives',
             alias: 'Helicopter Lives',
             type:   store.CONSUMABLE
         });
@@ -721,7 +786,7 @@ function init(){
 
         // A non-consumable (one-off) 'Full version / no ads' product
         store.register({
-            id:    'co.uk.jobooz.helicopter.remove_ads',
+            id:    'remove_ads',
             alias: 'Remove Ads',
             type:   store.NON_CONSUMABLE
         });
@@ -735,7 +800,6 @@ function init(){
             if (p.valid) {
                 var productId = p.id;
                 var nice_id = productId.split('.').pop();
-                alert('yeh valid product id: ' + productId)
                 var data = {
                     id: productId, // call store.order(id) to buy this product
                     title: p.title,
@@ -789,7 +853,6 @@ function init(){
         // get the el
         var productId = data.id;
         var nice_id = productId.split('.').pop();
-        alert(nice_id)
         var $el = $('#' + nice_id);
 
         // update price
@@ -835,13 +898,14 @@ function init(){
         no_ads = true;
         window.localStorage.setItem('helicopter_no_ads', true);
         // hide the remove ads purchase option
-        $('#remove_ads').hide();
+        $('#remove_ads, .remove-ads').hide();
         AdMob.hideBanner();
     }
 
     function show_purchase() {
         $no_lives.hide();
         $life_timer_wrap.hide();
+        $free_helicopters.hide();
 
         if (num_lives == 0) {
             $no_lives.show();
@@ -849,6 +913,10 @@ function init(){
 
         if (num_lives < 10){
             $life_timer_wrap.show();
+        }
+
+        if (!has_shared_before) {
+            $free_helicopters.show();
         }
 
         $purchase.show();
@@ -865,8 +933,32 @@ function init(){
     }
 
     $('.purchase-product').on(end_event, function() {
-        var productId = $(this).closest('.product').data('productId');
-        store.order(productId);
+        // if product id = free, show alert for sharing the game
+        if ($(this).hasClass('free')) {
+            console.log('yeh')
+            navigator.notification.confirm(
+                'Share us on social media and we will give you 10 helicopters for free!', // message
+                function(buttonIndex) {
+                    if (buttonIndex == 1) {
+                        hide_purchase();
+                        html2canvas(document.body, {
+                            onrendered: function(canvas) {
+                                var base64 = canvas.toDataURL();
+                                share_score(base64, true);
+                            }
+                        });
+                    }
+                },            // callback to invoke with index of button pressed
+                'Spread the word!',       // title
+                ['Share','No Thanks']     // buttonLabels
+            );
+        }
+        else {
+            var productId = $(this).closest('.product').data('productId');
+            if (is_device) {
+                store.order(productId);
+            }
+        }
     });
 
     $('#close-purchase').on(end_event, hide_purchase);

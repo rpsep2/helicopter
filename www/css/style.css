@@ -370,7 +370,7 @@ html{
 .product{
 	clear: both;
 	display: block;
-	padding:10px;
+	padding:6px;
 	border-radius: 5px;
 	background:#fff;
 	margin:5px 0 0 0;
@@ -378,17 +378,24 @@ html{
 	box-shadow: 0px 2px 0px rgba(0,0,0,0.3);
 }
 
+.product img{
+	float: left;
+	width:40px;
+	margin:0 8px 0 0;
+	display: block;
+}
+
 .product .title{
 	float: left;
-	font:bold 14px/35px Arial, Sans-serif;
-	height: 35px;
+	font:bold 14px/40px Arial, Sans-serif;
+	height: 40px;
 }
 
 .product .price{
 	float: right;
 	width: 80px;
 	height: 35px;
-	margin: 0 0 0 5px;
+	margin: 2px 0 0 5px;
 	font: 16px/35px Helvetica, Arial, Sans-serif;
 	color: #fff;
 	text-align: center;
@@ -398,6 +405,11 @@ html{
 	border-bottom: 2px solid #25970a;
 }
 
+.product .price.free{
+	background-color: #a96601;
+	border-bottom-color: #a96601;
+}
+
 .product .price span{
 	float:left;
 	width:76px;
@@ -405,11 +417,17 @@ html{
 	height:31px;
 	background: #37c117;
 	line-height: 31px;
+	border: 1px solid rgba(255,255,255,0.2);
+    box-sizing: border-box;
+}
+
+.product .price.free span{
+	background: #ff9900;
 }
 
 .product .price.hover{
 	border:none;
-	margin-top:2px;
+	margin-top:4px;
 }
 
 /* ---------- gameover screen ------------------- */
@@ -529,6 +547,16 @@ html{
 	margin-left: -100px;
 }
 
+.social-buttons-wrap{
+	width: 200px;
+	height: 35px;
+	display: block;
+	position: absolute;
+	top: 240px;
+	left: 50%;
+	margin-left: -100px;
+}
+
 #ok{
 	float:left;
 	width:90px;
@@ -565,20 +593,17 @@ html{
 
 .leaderboard{
 	float: left;
-	position: absolute;
-	top:240px;
-	left:50%;
 	width: 90px;
 	height: 35px;
 	font: 20px/35px Helvetica, Arial, Sans-serif;
 	color: #fff;
 	text-align: center;
 	background-color: #a96601;
-	margin: 0 0 0 -45px;
+	margin: 0 20px 0 0;
 	letter-spacing: -1px;
 }
 
-#share{
+.share{
 	float:left;
 	width:90px;
 	height:35px;
@@ -743,13 +768,13 @@ html{
 .rate,
 .remove-ads,
 .leaderboard,
-#share{
+.share{
 	border-radius:3px;
 	border-bottom:2px solid #25970a;
 }
 
 .leaderboard,
-#share{
+.share{
 	border-bottom-color: #a96601;
 }
 
@@ -763,17 +788,19 @@ html{
 #start span,
 .remove-ads span,
 .leaderboard span,
-#share span{
+.share span{
 	float:left;
 	width:86px;
 	margin:2px;
 	height:31px;
 	background: #37c117;
 	line-height: 31px;
+	border: 1px solid rgba(255,255,255,0.2);
+    box-sizing: border-box;
 }
 
 .leaderboard span,
-#share span{
+.share span{
 	background-color:#ff9900;
 }
 
@@ -793,7 +820,11 @@ html{
 .rate.hover,
 .remove-ads.hover,
 .leaderboard.hover,
-#share.hover{
+.share.hover{
 	border:none;
 	margin-top:2px;
+}
+
+.remove-ads.hover{
+	margin-top:9px;
 }
