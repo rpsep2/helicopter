@@ -243,13 +243,21 @@ function init(){
 
         // moving blocks at 10+ but randomly. except at exactly 10 we want a moving block.
         // at 20+ we want ALL blocks to be moving
-        if (cur_score >= 30) {
+        // at 30+ we make the blocks bigger even though they are moving
+        // at 40+ we make the blocks bigger again even though they are moving (realistic biggest size)
+        // TODO: future update - further increases to difficulty at 50+ like smaller playing field?? - 'roof' and 'floor'
+        // constantly moving in Indiana Jones Style
+        if (cur_score >= 40) {
             moving_block = 1;
-            block_height = block_height / 1.4;
+            block_height = block_height / 1.2;
+        }
+        else if (cur_score >= 30) {
+            moving_block = 1;
+            block_height = block_height / 1.3;
         }
         else if (cur_score >= 20) {
             moving_block = 1;
-            block_height = block_height / 2;
+            block_height = block_height / 1.5;
         }
         else if (cur_score >= 10) {
             // either 1 if 10, or random 0/1 otherwise
@@ -356,7 +364,7 @@ function init(){
 
         var hit = false;
 
-        if(copter_top <= 20){
+        if(copter_top <= 0){
             hit = true;
             show_gameover(false, copter_top, true);
             //stop this continuing
