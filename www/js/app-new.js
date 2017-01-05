@@ -709,7 +709,7 @@ function init(){
                 }
             }
             else {
-                navigator.notification.alert('There was an error loading the Game Center Highscores. Please check your settings and try again.', function() {}, 'Game Center Error');
+                navigator.notification.alert('There was an error loading the Game Center Highscores. Please make sure you are logged in to the Game Center and try again.', function() {}, 'Game Center Error');
             }
         }
     }
