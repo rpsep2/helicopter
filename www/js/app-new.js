@@ -56,8 +56,8 @@ function onDeviceReady(){
         };
     }else if(/(ipod|iphone|ipad)/i.test(navigator.userAgent)){
         admobid = { // for iOS
-            banner: 'ca-app-pub-8099513553195534/7510762403',
-            interstitial: 'ca-app-pub-8099513553195534/1464228807',
+            banner: 'ca-app-pub-8099513553195534/6693335605',
+            interstitial: 'ca-app-pub-8099513553195534/9567260005',
         };
     }else{
         admobid = { // for Windows Phone
