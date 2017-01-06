@@ -535,7 +535,7 @@ function init(){
                 NativeAudio.play('highscore_sound');
 
             // submit score to leaderboard if new best, and alrady authed
-            if (gamecenter_auth && new_best)
+            if (gamecenter_auth && new_best && is_device)
                 submit_highscore();
 
         },600);
@@ -694,7 +694,7 @@ function init(){
 
     $('.leaderboard').on(end_event, show_leaderboard);
 
-    function show_leaderboard() {
+    /*function show_leaderboard() {
         if (is_device) {
             if (gamecenter_auth) {
                 var platform = device.platform;
@@ -761,6 +761,82 @@ function init(){
     function gamecenter_show_fail(data) {
         navigator.notification.alert('There was an error loading the Game Center Highscores. Please check your settings and try again.', function() {}, 'Game Center Error');
     }
+    */
+
+    function show_leaderboard() {
+        if (is_device) {
+            var platform = device.platform;
+            if (platform.match(/ios/i)) {
+                var leaderboardId = 'helicopter.highscores';
+            }
+            else {
+                var leaderboardId = 'CgkImJe-77AZEAIQAA';
+            }
+            window.game.showLeaderboard(leaderboardId);
+        }
+    }
+
+    function submit_highscore() {
+        var platform = device.platform;
+        if (platform.match(/ios/i)) {
+            var leaderboardId = 'helicopter.highscores';
+        }
+        else {
+            var leaderboardId = 'CgkImJe-77AZEAIQAA';
+        }
+        window.game.submitScore(leaderboardId, best_score);
+    }
+
+    function do_gamecenter_auth() {
+        window.game.setUp();
+        if (!window.game.isLoggedIn()) {
+            gamecenter_auth = false;
+            window.game.login();
+        }
+        else {
+            update_user_highscore();
+            gamecenter_auth = true;
+        }
+    }
+
+    function update_user_highscore() {
+        var platform = device.platform;
+        if (platform.match(/ios/i)) {
+            var leaderboardId = 'helicopter.highscores';
+        }
+        else {
+            var leaderboardId = 'CgkImJe-77AZEAIQAA';
+        }
+        window.game.getPlayerScore(leaderboardId);
+    }
+
+    //callbacks
+    if (is_device) {
+        window.game.onLoginSucceeded = function(result) {
+            gamecenter_auth = true;
+            update_user_highscore();
+        };
+
+        window.game.onLoginFailed = function() {
+            gamecenter_auth = false;
+        };
+
+        window.game.onSubmitScoreSucceeded = function() {
+        };
+        window.game.onSubmitScoreFailed = function() {
+            navigator.notification.alert("We were unable to submit your highscore - please check you are logged in to the leaderboards to submit highscores", function(){}, 'Submit Highscore Failed');
+        };
+
+        window.game.onGetPlayerScoreSucceeded = function(result) {
+            var playerScore = result;
+            best_score = playerScore;
+            window.localStorage.setItem('helicopter_best_score', best_score);
+        };
+        window.game.onGetPlayerScoreFailed = function() {
+            navigator.notification.alert("We were unable to get your highscore - please check you are logged in to the leaderboards", function(){}, 'Get Highscore Failed');
+        };
+    }
+
 
     /* in app purchases */
 
