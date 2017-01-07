@@ -48,14 +48,14 @@
     <plugin spec="https://github.com/apache/cordova-plugin-splashscreen.git" source="git" />
     <plugin spec="https://github.com/apache/cordova-plugin-whitelist.git" source="git" />
     <!--<plugin spec="https://github.com/leecrossley/cordova-plugin-game-center.git" source="git" />-->
-    <plugin spec="https://github.com/cranberrygame/cordova-plugin-game.git" source="git">
+    <plugin spec="https://github.com/rpsep2/cordova-plugin-game.git" source="git">
         <param name="APP_ID" value="872112163736" />
     </plugin>
     <plugin spec="https://github.com/Telerik-Verified-Plugins/InAppPurchase.git" source="git" >
         <param name="BILLING_KEY" value="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlAAORuadeGA+R9pr4tERfqsxWUYUqGoImghpe9+e22Rq2BrUpN9vMFLQqAtM3EzocFYYQLAgptO8iyRBrLafZiHryVofGG+Gv9zemo7PZYIL7ULVCymiUrpObtxtCme1PSUqa3inz5Cgg6wz56dqYqNwCbABDfQ84hR5Qlzvz13WvEoBrDw38zYamUpoYb5d24byJBfmIFHI+PG7i6PHyOONRe/scn2FUMpbXf7I9aJlA+tJiZwo5pwsgOaAW9HrHwk8dT6EyU1lQ7XIxwH738rxZCXt/zIabwN88BvGq0inaU+kxvW3vxWkPmZr7KBD0IZ81I8mR0HYMf0tae+iaQIDAQAB"/>
     </plugin>
     <plugin spec="https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git" source="git" />
-    <plugin spec="https://github.com/apache/cordova-plugin-vibration.git" source="git" />
+    <plugin spec="https://github.com/francois-p-peloquin/cordova-silent-mode.git" source="git" />
 
     <!--<plugin name="org.apache.cordova.dialogs" />
     <plugin name="org.apache.cordova.media" spec="0.2.8" source="pgb" />
