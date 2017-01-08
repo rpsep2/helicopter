@@ -12,7 +12,7 @@ else
 var no_ads = window.localStorage.getItem('helicopter_no_ads') ? window.localStorage.getItem('helicopter_no_ads') : false;
 var admobid = {};
 var NativeAudio;
-var mute = window.localStorage.getItem('helicopter_mute') ? true : false;
+var mute = true; // assume mute to start with so we dont play any sound before mute status gets updated
 
 function onDeviceReady(){
     // Preload audio resources
@@ -85,12 +85,16 @@ function onDeviceReady(){
     setTimeout(function() {
         StatusBar.hide();
         navigator.splashscreen.hide();
-        if (!mute)
-            NativeAudio.loop('bg_sound');
     }, 4000);
 }
 
 function init(){
+
+    // admob bannrs on ipad appear taller than on iphone. make the floor higher
+    if (is_device)
+        if (device.model.match(/ipad/i))
+            $('#container').addClass('ipad');
+
     var $helicopter = $('#helicopter');
     var $container = $('#container');
     var $body = $('body');
@@ -131,7 +135,7 @@ function init(){
     var max_bottom = window_height /2; //dont want a gap bigger than half the screen, too easy
     var max_top = window_height /2; //dont want a gap bigger than half the screen, too easy
     var total_gap = window_height - floor_height - roof_height;
-    var gamecenter_auth = false;
+    var gamecenter_auth = window.localStorage.getItem('helicopter_gamecenter_auth') ? true : false;
     var $lives = $('#lives-count');
     var num_lives = window.localStorage.getItem('helicopter_lives') ? window.localStorage.getItem('helicopter_lives') : 10;
     var $purchase = $('#purchase');
@@ -169,9 +173,18 @@ function init(){
     // resume timer for lives, add any lives etc
     init_life_regen();
 
-    if (mute) {
-        $('#sound-toggle').addClass('mute');
-        update_sound();
+    // check phone ringer status... the looping nativeaudio plays when mute is on which is rubbish
+    if (is_device) {
+        SilentMode.init();
+        // plugin is buggy.. needs an initial couple calls then it is fine
+        SilentMode.isMuted(function(){
+            SilentMode.isMuted(function(){}, function() {});
+        }, function() {
+            SilentMode.isMuted(function(){}, function() {});
+        });
+        setTimeout(function() {
+            setInterval(check_ringer_status, 500);
+        }, 3000);
     }
 
     // on resume, recalculate lifes
@@ -534,8 +547,8 @@ function init(){
             if (new_best && is_device && !mute)
                 NativeAudio.play('highscore_sound');
 
-            // submit score to leaderboard if new best, and alrady authed
-            if (gamecenter_auth && new_best && is_device)
+            // submit score to leaderboard
+            if (is_device)
                 submit_highscore();
 
         },600);
@@ -625,7 +638,7 @@ function init(){
         if(platform.match(/ios/i))
             window.open('itms-apps://itunes.apple.com/app/helicopter!/id1189567725?ls=1&mt=8');
         else
-            window.open('market://details?id=co.uk.rp_digital.helicopter_free');
+            window.open('market://details?id=co.uk.jobooz.helicopter');
     });
 
     // Setup remove ads button - purchase, and store the fact user has purchased
@@ -694,77 +707,40 @@ function init(){
 
     $('.leaderboard').on(end_event, show_leaderboard);
 
-    /*function show_leaderboard() {
+    var trying_to_show = false;
+    function show_leaderboard() {
         if (is_device) {
-            if (gamecenter_auth) {
+            if (window.game.isLoggedIn()) {
                 var platform = device.platform;
                 if (platform.match(/ios/i)) {
-                    var data = {
-                        leaderboardId: "helicopter.highscores"
-                    };
-                    gamecenter.showLeaderboard(gamecenter_show_success, gamecenter_show_fail, data);
+                    var leaderboardId = 'helicopter.highscores';
                 }
                 else {
-                    // TODO android
+                    var leaderboardId = 'CgkImJe-77AZEAIQAA';
                 }
+                window.game.showLeaderboard(leaderboardId);
             }
             else {
-                navigator.notification.alert('There was an error loading the Game Center Highscores. Please make sure you are logged in to the Game Center and try again.', function() {}, 'Game Center Error');
+                trying_to_show = true;
+                window.game.login();
+
+                // has the user cancelled a login request before?
+                if (window.localStorage.getItem('helicopter_login_cancelled')) {
+                    var platform = device.platform;
+                    if (platform.match(/ios/i)) {
+                        navigator.notification.alert("You need to login to GameCenter to submit scores and access the leader boards", function(){}, 'GameCenter Error');
+                    }
+                    else {
+                        navigator.notification.alert("You need to login to Google Play Game Services to submit scores and access the leader boards", function(){}, 'Game Services Error');
+                    }
+                    trying_to_show = false;
+                }
             }
         }
     }
 
     function submit_highscore() {
-        if (is_device) {
-            var platform = device.platform;
-            if (platform.match(/ios/i)) {
-                var data = {
-                    score: best_score,
-                    leaderboardId: "helicopter.highscores"
-                };
-                gamecenter.submitScore(gamecenter_submit_success, gamecenter_submit_fail, data);
-            }
-            else {
-                // TODO: android
-            }
-        }
-    }
-
-    function do_gamecenter_auth() {
-        // different for ios vs android
-        var platform = device.platform;
-
-        if (platform.match(/ios/i))
-            gamecenter.auth(gamecenter_auth_success, gamecenter_auth_fail);
-        else {
-            // TODO: android
-        }
-    }
-
-    function gamecenter_auth_success() {
-        gamecenter_auth = true;
-    }
-
-    function gamecenter_auth_fail() {
-        gamecenter_auth = false;
-    }
-
-    function gamecenter_submit_success() {
-    }
-
-    function gamecenter_submit_fail() {
-    }
-
-    function gamecenter_show_success() {
-    }
-
-    function gamecenter_show_fail(data) {
-        navigator.notification.alert('There was an error loading the Game Center Highscores. Please check your settings and try again.', function() {}, 'Game Center Error');
-    }
-    */
-
-    function show_leaderboard() {
-        if (is_device) {
+        if (window.game.isLoggedIn()) {
             var platform = device.platform;
             if (platform.match(/ios/i)) {
                 var leaderboardId = 'helicopter.highscores';
@@ -772,30 +748,29 @@ function init(){
             else {
                 var leaderboardId = 'CgkImJe-77AZEAIQAA';
             }
-            window.game.showLeaderboard(leaderboardId);
+            window.game.submitScore(leaderboardId, best_score);
         }
-    }
-
-    function submit_highscore() {
-        var platform = device.platform;
-        if (platform.match(/ios/i)) {
-            var leaderboardId = 'helicopter.highscores';
-        }
-        else {
-            var leaderboardId = 'CgkImJe-77AZEAIQAA';
-        }
-        window.game.submitScore(leaderboardId, best_score);
     }
 
     function do_gamecenter_auth() {
         window.game.setUp();
         if (!window.game.isLoggedIn()) {
-            gamecenter_auth = false;
-            window.game.login();
+
+            // we are not logged in, but were we last time?
+            // if so, we can likely login again unless user has signed out of gamecenter
+            if (gamecenter_auth) {
+                window.game.login();
+            }
+            else {
+                // we arent logged in, and we never have been
+                gamecenter_auth = false;
+                //window.game.login(); // dont ask to login straight away.. its really annoying
+            }
         }
         else {
             update_user_highscore();
             gamecenter_auth = true;
+            window.localStorage.setItem('helicopter_gamecenter_auth', '1');
         }
     }
 
@@ -810,15 +785,25 @@ function init(){
         window.game.getPlayerScore(leaderboardId);
     }
 
-    //callbacks
+    // gamecenter callbacks
     if (is_device) {
         window.game.onLoginSucceeded = function(result) {
             gamecenter_auth = true;
             update_user_highscore();
+            window.localStorage.setItem('helicopter_gamecenter_auth', '1');
+            window.localStorage.removeItem('helicopter_login_cancelled');
+
+            if (trying_to_show)
+                show_leaderboard();
+
+            trying_to_show = false;
         };
 
-        window.game.onLoginFailed = function() {
+        window.game.onLoginFailed = function(data) {
             gamecenter_auth = false;
+            window.localStorage.setItem('helicopter_login_cancelled', '1');
+            window.localStorage.removeItem('helicopter_gamecenter_auth');
+            trying_to_show = false;
         };
 
         window.game.onSubmitScoreSucceeded = function() {
@@ -829,11 +814,23 @@ function init(){
 
         window.game.onGetPlayerScoreSucceeded = function(result) {
             var playerScore = result;
-            best_score = playerScore;
-            window.localStorage.setItem('helicopter_best_score', best_score);
+
+            if (playerScore > best_score) {
+                best_score = playerScore;
+                window.localStorage.setItem('helicopter_best_score', best_score);
+
+                // update in app elements
+                $end_best_score.html('<span>BEST SCORE</span>'+best_score);
+                $best_score.html('<span>BEST SCORE</span>'+best_score);
+            }
+            else {
+                // user has actually managed a better score while not logged in to gamecenter
+                // resubmit it
+                submit_highscore();
+            }
         };
         window.game.onGetPlayerScoreFailed = function() {
-            navigator.notification.alert("We were unable to get your highscore - please check you are logged in to the leaderboards", function(){}, 'Get Highscore Failed');
+            //navigator.notification.alert("We were unable to get your highscore - please check you are logged in to the leaderboards", function(){}, 'Get Highscore Failed');
         };
     }
 
@@ -1124,29 +1121,22 @@ function init(){
             return num;
     }
 
-    // toggle sound on/off
-    $('#sound-toggle').on(end_event, function() {
-        $(this).toggleClass('mute');
-        update_sound();
-    });
-
-    function update_sound() {
-        if ($('#sound-toggle').hasClass('mute')) {
-            window.localStorage.setItem('helicopter_mute', true);
-            mute = true;
-            // stop directly
-            if (is_device) {
-                NativeAudio.stop('bg_sound');
-                NativeAudio.stop('fly_sound');
+    function check_ringer_status() {
+        SilentMode.isMuted(
+            function() { //Callback is muted
+                if (!mute) { 
+                    mute = true;
+                    NativeAudio.stop('bg_sound');
+                    NativeAudio.stop('fly_sound');
+                }
+            }, function() {  //Callback is not muted
+                if (mute) {
+                    mute = false;
+                    // start loop again
+                    NativeAudio.loop('bg_sound');
+                }
             }
-        }
-        else {
-            window.localStorage.removeItem('helicopter_mute');
-            mute = false;
-            // start loop again
-            if (is_device)
-                NativeAudio.loop('bg_sound');
-        }
+        );
     }
 
 

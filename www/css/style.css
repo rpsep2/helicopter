@@ -172,6 +172,10 @@ html{
 	background-color: #f3cb75
 }
 
+.ipad #floor{
+	height: 150px;
+}
+
 .grass{
 	float:left;
 	width:100%;
@@ -193,6 +197,10 @@ html{
 	background-position: top left;
 	background-size:320px auto;
 	z-index:1;
+}
+
+.ipad #trees{
+	bottom:145px;
 }
 
 #roof{
@@ -547,6 +555,10 @@ html{
 	margin-left: -100px;
 }
 
+.ipad #gameover-buttons-wrapper{
+	bottom:240px;
+}
+
 .social-buttons-wrap{
 	width: 200px;
 	height: 35px;
@@ -725,6 +737,10 @@ html{
 	bottom: 150px;
 	left: 50%;
 	margin-left: -100px;
+}
+
+.ipad #intro-buttons-wrapper{
+	bottom:240px;
 }
 
 #start{

@@ -89,6 +89,12 @@ function onDeviceReady(){
 }
 
 function init(){
+
+    // admob bannrs on ipad appear taller than on iphone. make the floor higher
+    if (is_device)
+        if (device.model.match(/ipad/i))
+            $('#container').addClass('ipad');
+
     var $helicopter = $('#helicopter');
     var $container = $('#container');
     var $body = $('body');
