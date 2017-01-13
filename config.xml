@@ -4,7 +4,7 @@
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
         id        = "co.uk.jobooz.helicopter"
-        version   = "1.3.6">
+        version   = "1.3.7">
 
     <name>Helicopter</name>
 
@@ -56,6 +56,7 @@
     </plugin>
     <plugin spec="https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git" source="git" />
     <plugin spec="https://github.com/francois-p-peloquin/cordova-silent-mode.git" source="git" />
+    <plugin spec="https://github.com/letrunghieu/google-app-conversion-tracker.git" source="git" />
 
     <!--<plugin name="org.apache.cordova.dialogs" />
     <plugin name="org.apache.cordova.media" spec="0.2.8" source="pgb" />

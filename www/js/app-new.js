@@ -85,6 +85,9 @@ function onDeviceReady(){
     setTimeout(function() {
         StatusBar.hide();
         navigator.splashscreen.hide();
+
+        if (is_device)
+            GappTrack.track('948580348', 'FXQ4CM3gr20Q_N-oxAM', '0.00', false);
     }, 4000);
 }
 
@@ -619,7 +622,7 @@ function init(){
     }
 
     //setup hovers
-    $('#start, #ok, .rate, .remove-ads, .leaderboard, .share, .purchase-product, #close-purchase').on(start_event, function(){
+    $('#start, #ok, .rate, .remove-ads, .leaderboard, .share, .purchase-product, #close-purchase, #restore-purchases').on(start_event, function(){
         $(this).addClass('hover');
     }).on(end_event, function(){
         $(this).removeClass('hover');
@@ -916,6 +919,8 @@ function init(){
             order.finish();
         });
 
+        store.when("Remove Ads").owned(remove_ads);
+
         // Deal with errors:
         // -----------------
         store.error(function(error) {
@@ -929,6 +934,11 @@ function init(){
         // It's mostly fine to do this only at application startup but you can refresh it more often.
         store.refresh();
     }
+
+    $('#restore-purchases').on(end_event, function() {
+        if (is_device)
+            store.refresh();
+    });
 
     function update_store_item(data) {
         // get the el
@@ -978,8 +988,8 @@ function init(){
     function remove_ads() {
         no_ads = true;
         window.localStorage.setItem('helicopter_no_ads', true);
-        // hide the remove ads purchase option
-        $('#remove_ads, .remove-ads').hide();
+        // hide the remove ads purchase option. hide restore as only remove ads is non consumable
+        $('#remove_ads, .remove-ads, #restore-purchases').hide();
         AdMob.hideBanner();
     }
 
@@ -1124,7 +1134,7 @@ function init(){
     function check_ringer_status() {
         SilentMode.isMuted(
             function() { //Callback is muted
-                if (!mute) { 
+                if (!mute) {
                     mute = true;
                     NativeAudio.stop('bg_sound');
                     NativeAudio.stop('fly_sound');

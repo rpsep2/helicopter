@@ -438,6 +438,26 @@ html{
 	margin-top:4px;
 }
 
+#restore-purchases{
+	clear: both;
+	display: block;
+	margin: 25px auto -6px auto;
+	color: #319ffd;
+	font: bold 11px/30px Helvetica, Arial, Sans-serif;
+	-webkit-transition: all 0.2s ease-out;
+	width: 170px;
+	text-align: center;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	background: #fff;
+	box-shadow: 0 2px 0px rgba(0,0,0,0.2);
+	text-transform: uppercase;
+}
+
+#restore-purchases.hover{
+	opacity: 0.6;
+}
+
 /* ---------- gameover screen ------------------- */
 #gameover{
 	display:none;
