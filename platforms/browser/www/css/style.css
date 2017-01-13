@@ -89,19 +89,19 @@ html{
 }
 
 #helicopter.easy{
-	-webkit-transition: all 1.8s ease-in;
+	-webkit-transition: all 1.8s ease-in-out;
 }
 
 #helicopter.medium{
-	-webkit-transition: all 1.4s ease-in;
+	-webkit-transition: all 1.4s ease-in-out;
 }
 
 #helicopter.hard{
-	-webkit-transition: all 1s ease-in;
+	-webkit-transition: all 1s ease-in-out;
 }
 
 #helicopter.fall{
-	-webkit-transition: all 0.5s linear;
+	-webkit-transition: all 0.5s ease-in;
 }
 
 .obstacle{
