@@ -625,10 +625,17 @@ function init(){
     $('#start, #ok, .rate, .remove-ads, .leaderboard, .share, .purchase-product, #close-purchase, #restore-purchases').on(start_event, function(){
         $(this).addClass('hover');
     }).on(end_event, function(){
-        $(this).removeClass('hover');
+        var $this = $(this);
+        $this.removeClass('hover');
         if (is_device && !mute) {
             NativeAudio.play('click_sound');
         }
+
+        $this.addClass('hover-out');
+
+        setTimeout(function() {
+            $this.removeClass('hover-out');
+        }, 300);
     });
 
     // Setup Rate button

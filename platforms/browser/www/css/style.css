@@ -89,19 +89,19 @@ html{
 }
 
 #helicopter.easy{
-	-webkit-transition: all 1.8s ease-in-out;
+	-webkit-transition: all 1.8s cubic-bezier(0.55, 0.085, 0.68, 0.53);
 }
 
 #helicopter.medium{
-	-webkit-transition: all 1.4s ease-in-out;
+	-webkit-transition: all 1.4s cubic-bezier(0.55, 0.085, 0.68, 0.53);
 }
 
 #helicopter.hard{
-	-webkit-transition: all 1s ease-in-out;
+	-webkit-transition: all 0.95s cubic-bezier(0.55, 0.085, 0.68, 0.53);
 }
 
 #helicopter.fall{
-	-webkit-transition: all 0.5s ease-in;
+	-webkit-transition: all 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53);
 }
 
 .obstacle{
@@ -296,8 +296,22 @@ html{
 	right:10px;
 	background:#319ffd;
 	border-radius: 10px;
-	padding:15px 15px 20px 15px;
+	padding:45px 15px 20px 15px;
 	border:2px solid #fff;
+}
+
+#purchase-title{
+	position: absolute;
+	top: -6px;
+	left: 50%;
+	margin: 0 0 0 -114px;
+	width: 228px;
+	height: 34px;
+	background: url(../images/shop-title-bg.png) no-repeat center;
+	background-size: 228px auto;
+	font: 600 17px/34px Arial, Sans-serif;
+	color: #fff;
+	text-align: center;
 }
 
 #close-purchase{
@@ -310,7 +324,7 @@ html{
 	background: #ff9900;
 	border: 2px solid #a96601;
 	color: #fff;
-	font: bold 24px/32px Arial, Sans-serif;
+	font: bold 30px/32px Arial, Sans-serif;
 	text-align: center;
 	text-indent: 1px;
 }
@@ -319,12 +333,17 @@ html{
 	background:#a96601;
 }
 
-.purchase-inner img{
+.purchase-inner > img{
 	display: block;
 	margin:0 auto;
 	width:49px;
 	clear: both;
 	border:0;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-timing-function:ease-in-out;
+	-webkit-animation-name: float;
+	-webkit-animation-iteration-count: infinite;
+	-webkit-transform: translate3d(0,0,0);
 }
 
 #no-lives{
@@ -332,7 +351,7 @@ html{
 	float: left;
 	width:100%;
 	text-align: center;
-	margin:0 0 30px 0;
+	margin:0 0 20px 0;
 	color:#fff;
 	font:bold 20px Arial, Sans-serif;
 }
@@ -341,7 +360,7 @@ html{
 	display: none;
 	float: left;
 	width:100%;
-	margin:30px 0 0 0;
+	margin:20px 0 0 0;
 }
 
 #life-timer-wrap p{
@@ -441,17 +460,18 @@ html{
 #restore-purchases{
 	clear: both;
 	display: block;
-	margin: 25px auto -6px auto;
 	color: #319ffd;
 	font: bold 11px/30px Helvetica, Arial, Sans-serif;
 	-webkit-transition: all 0.2s ease-out;
 	width: 170px;
 	text-align: center;
-	border: 1px solid #fff;
 	border-radius: 3px;
-	background: #fff;
-	box-shadow: 0 2px 0px rgba(0,0,0,0.2);
+	background: rgba(0,0,0,0.4);
 	text-transform: uppercase;
+	position: absolute;
+	margin: 0 0 0 -85px;
+	left: 50%;
+	bottom: -50px;
 }
 
 #restore-purchases.hover{
@@ -863,4 +883,29 @@ html{
 
 .remove-ads.hover{
 	margin-top:9px;
+}
+
+#start.hover-out,
+#ok.hover-out,
+.rate.hover-out,
+.remove-ads.hover-out,
+.leaderboard.hover-out,
+.share.hover-out,
+.product .price.hover-out{
+	animation: bounce_out 0.3s forwards linear;
+}
+
+@keyframes bounce_out{
+	0%{
+		transform: scale(1);
+	}
+	30%{
+		transform: scale(1.02);
+	}
+	60%{
+		transform: scale(0.95);
+	}
+	100%{
+		transform: scale(1);
+	}
 }
