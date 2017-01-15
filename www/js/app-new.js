@@ -150,6 +150,8 @@ function init(){
     var life_regen_counter;
     var $free_helicopters = $('#helicopter_lives_free');
     var has_shared_before = window.localStorage.getItem('helicopter_has_shared') ? true : false;
+    var increment_floor;
+    var $next_block;
 
     /* --  SETTINGS -- */
     var speed = 1.2; // set the speed depending on difficulty selected, lower = harder
@@ -242,7 +244,7 @@ function init(){
     }
 
     function grass_scroll(){
-        $grass.css('-webkit-transition','all '+ ani_speed/1000 +'s linear');
+        //$grass.css('-webkit-transition','all '+ ani_speed/1000 +'s linear');
 
         var current_bg_pos = $grass.css('background-position-x');
         var new_bg_pos = parseInt(current_bg_pos) - window_width;
@@ -251,11 +253,16 @@ function init(){
     }
 
     function create_obstacle(){
-        var $block = $(document.createElement('div')).addClass('obstacle');
+        if ($next_block) {
+            var $block = $next_block;
+        }
+        else{
+            var $block = $(document.createElement('div')).addClass('obstacle');
+            $wrapper.append($block);
+        }
 
         var block_height = randomNumberFromRange(min_height, max_height);
         var moving_block = 0;
-
 
         // moving blocks at 10+ but randomly. except at exactly 10 we want a moving block.
         // at 20+ we want ALL blocks to be moving
@@ -290,7 +297,7 @@ function init(){
         var top_bottom = Math.round(Math.random() * 1);
 
         // assign 0 to a block at bottom
-        if(top_bottom === 0){
+        if(top_bottom == 0){
 
             //generate random number between 2 numbers.
             var rand_bottom = randomNumberFromRange(min_bottom_pos, max_bottom);
@@ -304,37 +311,45 @@ function init(){
             var rand_top = randomNumberFromRange(min_top_pos, max_top);
 
             $block.css('top', rand_top+'px')
-
         }
 
-        $block.css('-webkit-transition', 'all '+ ani_speed/1000 + 's linear');
-        $wrapper.append($block);
+        $block.addClass('moving');
 
-        //set timeout to allow element to be in DOM before animating it
-        setTimeout(function(){
-            var $new_obstacle = $('.obstacle').not('.moving');
-            if (moving_block === 1) {
-                if (top_bottom === 0) {
-                    var top_gap = total_gap - (rand_bottom + block_height);
-                    $new_obstacle.addClass('moving').css('-webkit-transform','translate3d(-'+ parseInt(window_width + 40) +'px,-'+top_gap+'px,0)');
+        setTimeout(function() {
+            if (moving_block == 1) {
+                if (top_bottom == 0) {
+                    var top_gap = Math.abs(total_gap - (rand_bottom + block_height));
+                    $block.css({
+                        '-webkit-transition': 'all '+ parseFloat(ani_speed/1000) + 's linear',
+                        '-webkit-transform':'translate3d(-'+ parseInt(window_width + 40) +'px,-'+top_gap+'px,0)'
+                    });
                 }
                 else {
                     var bottom_gap = total_gap - (rand_top + block_height);
-                    $new_obstacle.addClass('moving').css('-webkit-transform','translate3d(-'+ parseInt(window_width + 40) +'px,'+bottom_gap+'px,0)');
+                    $block.css({
+                        '-webkit-transition': 'all '+ parseFloat(ani_speed/1000) + 's linear',
+                        '-webkit-transform':'translate3d(-'+ parseInt(window_width + 40) +'px,'+bottom_gap+'px,0)'
+                    });
                 }
             }
             else {
-                $new_obstacle.addClass('moving').css('-webkit-transform','translate3d(-'+ parseInt(window_width + 40) +'px,0,0)');
+                $block.css({
+                    '-webkit-transition': 'all '+ parseFloat(ani_speed/1000) + 's linear',
+                    '-webkit-transform':'translate3d(-'+ parseInt(window_width + 40) +'px,0,0)'
+                });
             }
             next_score = setTimeout(function(){
                 add_score();
             },(ani_speed/5) *4);
-        },20)
 
-        // after the obstacle has gone accross screen, remove it
-        remove_block = setTimeout(function(){
-            $('.obstacle.moving').first().remove();
-        },ani_speed);
+            // after the obstacle has gone accross screen, remove it
+            remove_block = setTimeout(function(){
+                $block.remove();
+            },  ani_speed - 50);
+        }, 30);
+
+        $next_block = $(document.createElement('div')).addClass('obstacle');
+        $wrapper.append($next_block);
     }
 
     function randomNumberFromRange(min,max){
@@ -394,7 +409,7 @@ function init(){
             return false;
         }
 
-        $.each($('.obstacle'), function(i, block){
+        $.each($('.obstacle.moving'), function(i, block){
             var block = $(block);
             var block_offset = block.offset();
             var block_top = block_offset.top;
@@ -432,6 +447,36 @@ function init(){
         if (is_device && !mute) {
             NativeAudio.play('success_sound');
         }
+
+        if (cur_score >= 20 && !increment_floor) {
+            increment_floor = setInterval(function() {
+                increment_floor_height(10);
+            }, 1200);
+        }    
+    }
+
+    function increment_floor_height(increment) {
+        $floor.css('height', floor_height + increment + 'px');
+        update_floor_heights();
+
+        // 50% of window height
+        if (total_gap <= ((window_height / 100) * 50)){
+            clearInterval(increment_floor);
+        }
+    }
+
+    function update_floor_heights() {
+        floor_height = $floor.height();
+        min_bottom_pos = parseInt(min_gap + floor_height); //minimim position bottom for a feasable bottom gap
+        min_height = window_height - floor_height - min_gap - 100;
+        max_height = window_height - min_gap - roof_height - floor_height; //max height a block can be
+        total_gap = window_height - floor_height - roof_height;
+        min_bottom_pos = parseInt(min_gap + floor_height);
+    }
+
+    function reset_floor_heights() {
+        $floor.removeAttr('style');
+        update_floor_heights();
     }
 
     function show_gameover(hit_bottom, copter_top, hit_top){
@@ -469,6 +514,9 @@ function init(){
         clearTimeout(remove_block);
         clearInterval(scroll_grass);
         clearInterval(increase_speed);
+        clearInterval(increment_floor);
+        increment_floor = null;
+        $next_block = null;
 
         // Reset ani_speed
         ani_speed = set_ani_speed();
@@ -597,9 +645,10 @@ function init(){
             $end_best_score.removeClass('new-best');
 
             grass_scroll();
-            scroll_grass = setInterval(grass_scroll, ani_speed);
+            scroll_grass = setInterval(grass_scroll, 1200);
 
             update_lives();
+            reset_floor_heights();
         }, timeout);
     }
 
@@ -720,6 +769,7 @@ function init(){
     var trying_to_show = false;
     function show_leaderboard() {
         if (is_device) {
+            show_loader();
             if (window.game.isLoggedIn()) {
                 var platform = device.platform;
                 if (platform.match(/ios/i)) {
@@ -729,6 +779,7 @@ function init(){
                     var leaderboardId = 'CgkImJe-77AZEAIQAA';
                 }
                 window.game.showLeaderboard(leaderboardId);
+                hide_loader();
             }
             else {
                 trying_to_show = true;
@@ -744,6 +795,7 @@ function init(){
                         navigator.notification.alert("You need to login to Google Play Game Services to submit scores and access the leader boards", function(){}, 'Game Services Error');
                     }
                     trying_to_show = false;
+                    hide_loader();
                 }
             }
         }
@@ -805,6 +857,8 @@ function init(){
 
             if (trying_to_show)
                 show_leaderboard();
+            else
+                hide_loader();
 
             trying_to_show = false;
         };
@@ -814,12 +868,20 @@ function init(){
             window.localStorage.setItem('helicopter_login_cancelled', '1');
             window.localStorage.removeItem('helicopter_gamecenter_auth');
             trying_to_show = false;
+            hide_loader();
         };
 
         window.game.onSubmitScoreSucceeded = function() {
         };
         window.game.onSubmitScoreFailed = function() {
             navigator.notification.alert("We were unable to submit your highscore - please check you are logged in to the leaderboards to submit highscores", function(){}, 'Submit Highscore Failed');
+        };
+
+        window.game.onShowLeaderboardSucceeded = function() {
+            hide_loader();
+        };
+        window.game.onShowLeaderboardFailed = function() {
+            hide_loader();
         };
 
         window.game.onGetPlayerScoreSucceeded = function(result) {
@@ -842,6 +904,18 @@ function init(){
         window.game.onGetPlayerScoreFailed = function() {
             //navigator.notification.alert("We were unable to get your highscore - please check you are logged in to the leaderboards", function(){}, 'Get Highscore Failed');
         };
+    }
+
+    function show_loader() {
+        $container.addClass('loading');
+    }
+
+    function hide_loader() {
+        $container.addClass('deloading').removeClass('loading');
+
+        setTimeout(function() {
+            $container.removeClass('deloading');
+        }, 300);
     }
 
 
@@ -917,6 +991,7 @@ function init(){
             clearInterval(life_regen_counter);
             init_life_regen();
             order.finish();
+            hide_loader();
         });
 
         // When the purchase of no adverts, update
@@ -924,6 +999,7 @@ function init(){
             remove_ads();
             hide_purchase();
             order.finish();
+            hide_loader();
         });
 
         store.when("Remove Ads").owned(remove_ads);
@@ -931,8 +1007,11 @@ function init(){
         // Deal with errors:
         // -----------------
         store.error(function(error) {
-            navigator.notification.alert('ERROR ' + error.code + ': ' + error.message);
+            //navigator.notification.alert('ERROR ' + error.code + ': ' + error.message);
+            hide_loader();
         });
+        store.when("Remove Ads").cancelled(hide_loader);
+        store.when("Helicopter Lives").cancelled(hide_loader);
 
         // As the last step, refresh the store:
         // -------------------------------------
@@ -943,8 +1022,16 @@ function init(){
     }
 
     $('#restore-purchases').on(end_event, function() {
-        if (is_device)
+        if (is_device) {
+            show_loader();
             store.refresh();
+
+            // incase user doesnt actually own anything, loader will never be hidden in remove_ads
+            // so, after 5 seconds, hide it anyway
+            setTimeout(function() {
+                hide_loader();
+            }, 5000);
+        }
     });
 
     function update_store_item(data) {
@@ -998,6 +1085,7 @@ function init(){
         // hide the remove ads purchase option. hide restore as only remove ads is non consumable
         $('#remove_ads, .remove-ads, #restore-purchases').hide();
         AdMob.hideBanner();
+        hide_loader();
     }
 
     function show_purchase() {
@@ -1033,7 +1121,6 @@ function init(){
     $('.purchase-product').on(end_event, function() {
         // if product id = free, show alert for sharing the game
         if ($(this).hasClass('free')) {
-            console.log('yeh')
             navigator.notification.confirm(
                 'Share us on social media and we will give you 10 helicopters for free!', // message
                 function(buttonIndex) {
@@ -1054,6 +1141,7 @@ function init(){
         else {
             var productId = $(this).closest('.product').data('productId');
             if (is_device) {
+                show_loader();
                 store.order(productId);
             }
         }

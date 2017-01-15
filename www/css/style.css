@@ -49,6 +49,49 @@ html{
 	animation-iteration-count: 1;
 }
 
+#container.loading:after{
+	content: "";
+	position: absolute;
+	top:0px;
+	left:0px;
+	right:0px;
+	bottom:0px;
+	z-index:50;
+	opacity: 0;
+	background:#000;
+	animation: loading_bg 0.3s forwards linear;
+	animation-iteration-count: 1;
+}
+
+#container.deloading:after{
+	content: "";
+	position: absolute;
+	top:0px;
+	left:0px;
+	right:0px;
+	bottom:0px;
+	z-index:50;
+	opacity: 0;
+	background:#000;
+	animation: deloading_bg 0.3s forwards linear;
+	animation-iteration-count: 1;
+}
+
+#container.loading:before{
+	content: "";
+	position: absolute;
+	top:200px;
+	left:50%;
+	width:20px;
+	height:20px;
+	margin:-12px;
+	border:2px solid #fff;
+	border-top-color: transparent;
+	border-radius: 24px;
+	z-index:55;
+	animation: loading 0.8s infinite linear;
+}
+
 @keyframes restart{
 	0%{
 		opacity: 0;
@@ -58,6 +101,33 @@ html{
 	}
 	100%{
 		opacity: 0;
+	}
+}
+
+@keyframes loading_bg{
+	0%{
+		opacity: 0;
+	}
+	100%{
+		opacity: 0.6;
+	}
+}
+
+@keyframes deloading_bg{
+	0%{
+		opacity: 0.6;
+	}
+	100%{
+		opacity: 0;
+	}
+}
+
+@keyframes loading{
+	0%{
+		transform: rotate(0deg);
+	}
+	100%{
+		transform: rotate(360deg);
 	}
 }
 
@@ -169,7 +239,9 @@ html{
 	width:100%;
 	height:75px;
 	z-index:5;
-	background-color: #f3cb75
+	background-color: #f3cb75;
+	transition: all 0.2s linear;
+	-webkit-transform:translate3d(0,0,0);
 }
 
 .ipad #floor{
@@ -185,6 +257,9 @@ html{
 	background-size:320px 11px;
 	background-position-x:0px;
 	margin-top:-3px;
+	position: relative;
+	z-index: 2;
+	-webkit-transition: all 1.2s linear;
 }
 
 #trees{
@@ -197,10 +272,6 @@ html{
 	background-position: top left;
 	background-size:320px auto;
 	z-index:1;
-}
-
-.ipad #trees{
-	bottom:145px;
 }
 
 #roof{
@@ -333,10 +404,11 @@ html{
 	background:#a96601;
 }
 
-.purchase-inner > img{
+#purchase-helicopter-img{
 	display: block;
 	margin:0 auto;
 	width:49px;
+	height: 32px;
 	clear: both;
 	border:0;
 	-webkit-animation-duration: 1s;
@@ -344,6 +416,60 @@ html{
 	-webkit-animation-name: float;
 	-webkit-animation-iteration-count: infinite;
 	-webkit-transform: translate3d(0,0,0);
+}
+
+#purchase-helicopter-img img{
+	float: left;
+	width:100%;
+	display: block;
+	margin:0;
+}
+
+#purchase-helicopter-img span{
+	content: "";
+	position: absolute;
+	top:0px;
+	left:0px;
+	width:5px;
+	height: 5px;
+	background: rgba(255,255,255,1);
+	display: block;
+	border-radius:10px;
+	-webkit-transform:translate3d(0,0,0);
+	transform:translate3d(0,0,0);
+	-webkit-animation: move_purchase_trail 0.2s infinite linear;
+	animation: move_purchase_trail 0.2s infinite linear;
+}
+
+#purchase-helicopter-img span:first-child{
+	animation-delay: 0.066s;
+	-webkit-animation-delay: 0.066s;
+}
+
+#purchase-helicopter-img span:first-child + span{
+	-webkit-animation-delay: 0.132s;
+}
+
+@keyframes move_purchase_trail{
+	0%{
+		background: rgba(255,255,255,1);
+		transform:translate3d(0,0,0);
+	}
+	100%{
+		background: rgba(255,255,255,0);
+		transform:translate3d(-40px,0,0);
+	}
+}
+
+@-webkit-keyframes move_purchase_trail{
+	0%{
+		background: rgba(255,255,255,1);
+		transform:translate3d(0,0,0);
+	}
+	100%{
+		background: rgba(255,255,255,0);
+		transform:translate3d(-40px,0,0);
+	}
 }
 
 #no-lives{
